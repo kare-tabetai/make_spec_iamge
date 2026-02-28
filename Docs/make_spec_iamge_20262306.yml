@@ -1,0 +1,2001 @@
+app:
+  description: 'デジタルゲームの企画書を生成するAIエージェント。
+
+    マルチエージェントでアイデアを大量に生成、まとめてmarkdown形式の企画書を生成。
+
+    その企画書をnanobananaでペラ１企画書として出力する。'
+  icon: 🤖
+  icon_background: '#E0F2FE'
+  mode: workflow
+  name: make_spec_iamge
+  use_icon_as_answer_icon: false
+dependencies:
+- current_identifier: null
+  type: marketplace
+  value:
+    marketplace_plugin_unique_identifier: langgenius/brave:0.0.2@4ebd53fd3353a4c9ee3107587ab40a928162fb5578a72f01f9fdc1ae58f79197
+    version: null
+- current_identifier: null
+  type: marketplace
+  value:
+    marketplace_plugin_unique_identifier: langgenius/gemini:0.7.4@5faf411e694e0da130a337347a625a3812b1b7502a0183382d66d92c841bf05a
+    version: null
+kind: app
+version: 0.5.0
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      allowed_file_extensions:
+      - .JPG
+      - .JPEG
+      - .PNG
+      - .GIF
+      - .WEBP
+      - .SVG
+      allowed_file_types:
+      - image
+      allowed_file_upload_methods:
+      - local_file
+      - remote_url
+      enabled: false
+      fileUploadConfig:
+        attachment_image_file_size_limit: 2
+        audio_file_size_limit: 50
+        batch_count_limit: 5
+        file_size_limit: 15
+        file_upload_limit: 50
+        image_file_batch_limit: 10
+        image_file_size_limit: 10
+        single_chunk_attachment_limit: 10
+        video_file_size_limit: 100
+        workflow_file_upload_limit: 10
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
+        - local_file
+        - remote_url
+      number_limits: 3
+    opening_statement: ''
+    retriever_resource:
+      enabled: true
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    suggested_questions: []
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+      language: ''
+      voice: ''
+  graph:
+    edges:
+    - data:
+        isInLoop: false
+        sourceType: tool
+        targetType: llm
+      id: 1769186917543-source-1769188060907-target
+      selected: false
+      source: '1769186917543'
+      sourceHandle: source
+      target: '1769188060907'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: llm
+        targetType: iteration
+      id: 1769188060907-source-1769188492411-target
+      selected: false
+      source: '1769188060907'
+      sourceHandle: source
+      target: '1769188492411'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: true
+        isInLoop: false
+        iteration_id: '1769188492411'
+        sourceType: iteration-start
+        targetType: http-request
+      id: 1769188492411start-source-1769188527876-target
+      selected: false
+      source: 1769188492411start
+      sourceHandle: source
+      target: '1769188527876'
+      targetHandle: target
+      type: custom
+      zIndex: 1002
+    - data:
+        isInLoop: false
+        sourceType: iteration
+        targetType: llm
+      id: 1769188492411-source-1769184011047-target
+      selected: false
+      source: '1769188492411'
+      sourceHandle: source
+      target: '1769184011047'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: llm
+        targetType: llm
+      id: 1769184011047-source-17692203989340-target
+      selected: false
+      source: '1769184011047'
+      sourceHandle: source
+      target: '17692203989340'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: iteration
+        targetType: end
+      id: 1769222306776-source-1769104402920-target
+      selected: false
+      source: '1769222306776'
+      sourceHandle: source
+      target: '1769104402920'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: true
+        isInLoop: false
+        iteration_id: '1769222744303'
+        sourceType: iteration-start
+        targetType: llm
+      id: 1769222744303start-source-1769223133886-target
+      selected: false
+      source: 1769222744303start
+      sourceHandle: source
+      target: '1769223133886'
+      targetHandle: target
+      type: custom
+      zIndex: 1002
+    - data:
+        isInIteration: true
+        isInLoop: false
+        iteration_id: '1769222306776'
+        sourceType: iteration-start
+        targetType: llm
+      id: 1769222306776start-source-17692223200090-target
+      selected: false
+      source: 1769222306776start
+      sourceHandle: source
+      target: '17692223200090'
+      targetHandle: target
+      type: custom
+      zIndex: 1002
+    - data:
+        isInLoop: false
+        sourceType: start
+        targetType: llm
+      id: 1769063124127-source-1769333078497-target
+      selected: false
+      source: '1769063124127'
+      sourceHandle: source
+      target: '1769333078497'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: llm
+        targetType: iteration
+      id: 1769333078497-source-1769333867638-target
+      selected: false
+      source: '1769333078497'
+      sourceHandle: source
+      target: '1769333867638'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: true
+        isInLoop: false
+        iteration_id: '1769333867638'
+        sourceType: iteration-start
+        targetType: llm
+      id: 1769333867638start-source-1769333890967-target
+      selected: false
+      source: 1769333867638start
+      sourceHandle: source
+      target: '1769333890967'
+      targetHandle: target
+      type: custom
+      zIndex: 1002
+    - data:
+        isInLoop: false
+        sourceType: iteration
+        targetType: llm
+      id: 1769333867638-source-17693625766910-target
+      selected: false
+      source: '1769333867638'
+      sourceHandle: source
+      target: '17693625766910'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: llm
+        targetType: iteration
+      id: 17693625766910-source-1769222744303-target
+      selected: false
+      source: '17693625766910'
+      sourceHandle: source
+      target: '1769222744303'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: iteration
+        targetType: code
+      id: 1769222744303-source-1769368005928-target
+      selected: false
+      source: '1769222744303'
+      sourceHandle: source
+      target: '1769368005928'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: code
+        targetType: iteration
+      id: 1769368005928-source-1769445168501-target
+      selected: false
+      source: '1769368005928'
+      sourceHandle: source
+      target: '1769445168501'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: iteration
+        targetType: iteration
+      id: 1769445168501-source-1769222306776-target
+      selected: false
+      source: '1769445168501'
+      sourceHandle: source
+      target: '1769222306776'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: true
+        isInLoop: false
+        iteration_id: '1769445168501'
+        sourceType: iteration-start
+        targetType: llm
+      id: 1769445168501start-source-1769445210518-target
+      selected: false
+      source: 1769445168501start
+      sourceHandle: source
+      target: '1769445210518'
+      targetHandle: target
+      type: custom
+      zIndex: 1002
+    - data:
+        isInIteration: true
+        isInLoop: false
+        iteration_id: '1769445168501'
+        sourceType: llm
+        targetType: llm
+      id: 1769445210518-source-17694479645720-target
+      selected: false
+      source: '1769445210518'
+      sourceHandle: source
+      target: '17694479645720'
+      targetHandle: target
+      type: custom
+      zIndex: 1002
+    - data:
+        isInIteration: true
+        isInLoop: false
+        iteration_id: '1769445168501'
+        sourceType: llm
+        targetType: llm
+      id: 17694479645720-source-17694498269100-target
+      selected: false
+      source: '17694479645720'
+      sourceHandle: source
+      target: '17694498269100'
+      targetHandle: target
+      type: custom
+      zIndex: 1002
+    - data:
+        isInIteration: true
+        isInLoop: false
+        iteration_id: '1769445168501'
+        sourceType: llm
+        targetType: llm
+      id: 17694498269100-source-17702111425890-target
+      selected: false
+      source: '17694498269100'
+      sourceHandle: source
+      target: '17702111425890'
+      targetHandle: target
+      type: custom
+      zIndex: 1002
+    nodes:
+    - data:
+        selected: false
+        title: ユーザー入力
+        type: start
+        variables:
+        - default: 「不自由」
+          hint: ''
+          label: ゲームテーマ
+          max_length: 32
+          options: []
+          placeholder: ''
+          required: true
+          type: text-input
+          variable: game_theme
+        - default: '5'
+          hint: ''
+          label: generate_count
+          max_length: 48
+          options: []
+          placeholder: ''
+          required: true
+          type: number
+          variable: generate_count
+        - default: '1'
+          hint: ''
+          label: extract_count
+          max_length: 48
+          options: []
+          placeholder: ''
+          required: true
+          type: number
+          variable: extract_count
+      height: 161
+      id: '1769063124127'
+      position:
+        x: -84.39264520940992
+        y: -472.0173965560497
+      positionAbsolute:
+        x: -84.39264520940992
+        y: -472.0173965560497
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        context:
+          enabled: true
+          variable_selector:
+          - '1769063124127'
+          - game_theme
+        model:
+          completion_params:
+            temperature: 0.7
+          mode: chat
+          name: gemini-2.5-flash-lite
+          provider: langgenius/gemini/google
+        prompt_config:
+          jinja2_variables: []
+        prompt_template:
+        - edition_type: basic
+          id: 208ee090-298b-4c73-92cb-2b4e6b35cdab
+          role: system
+          text: '- あなたは厳密なJSONのみを出力する
+
+            - あなたは世界を驚かせる革新的なゲームを開発するゲームデザイナーです
+
+            -『良いゲーム』ではなく『おもしろい（心が動く）ゲーム』に振り切ってください'
+        - id: 96424112-7e93-444a-98d9-0228b925f012
+          role: user
+          text: '{{#context#}}をテーマにしたゲームの企画アイデアの種を考えます。
+
+            「〇〇を□□して(手段)、××を△△する(目的)のゲーム」
+
+            として表せるゲームのアイデアを10個生成してください。'
+        retry_config:
+          max_retries: 3
+          retry_enabled: false
+          retry_interval: 1000
+        selected: false
+        structured_output:
+          schema:
+            additionalProperties: false
+            properties:
+              idea_list:
+                description: 「〇〇を□□して(手段)、××を△△する(目的)のゲーム」という形式の文字列を要素とする配列
+                items:
+                  type: string
+                type: array
+            required:
+            - idea_list
+            type: object
+        structured_output_enabled: true
+        title: EMSフレームワークで企画抽出
+        type: llm
+        vision:
+          enabled: false
+      height: 88
+      id: '1769065287112'
+      position:
+        x: 198
+        y: 747
+      positionAbsolute:
+        x: 198
+        y: 747
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        outputs:
+        - value_selector:
+          - '1769222306776'
+          - output
+          value_type: array[string]
+          variable: image_specs
+        - value_selector:
+          - '1769445168501'
+          - output
+          value_type: array[object]
+          variable: text_specs
+        selected: false
+        title: 出力
+        type: end
+      height: 114
+      id: '1769104402920'
+      position:
+        x: 3999.730830321904
+        y: -502.148698354997
+      positionAbsolute:
+        x: 3999.730830321904
+        y: -502.148698354997
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        author: Dify
+        desc: ''
+        height: 88
+        selected: false
+        showAuthor: true
+        text: '{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"シンプル","type":"text","version":1}],"direction":null,"format":"","indent":0,"type":"paragraph","version":1,"textFormat":0,"textStyle":""}],"direction":null,"format":"","indent":0,"type":"root","version":1}}'
+        theme: blue
+        title: ''
+        type: ''
+        width: 240
+      height: 88
+      id: '1769183275105'
+      position:
+        x: 198
+        y: 633.0764904414813
+      positionAbsolute:
+        x: 198
+        y: 633.0764904414813
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom-note
+      width: 240
+    - data:
+        context:
+          enabled: true
+          variable_selector:
+          - '1769188492411'
+          - output
+        model:
+          completion_params:
+            temperature: 0.7
+          mode: chat
+          name: gemini-2.5-flash
+          provider: langgenius/gemini/google
+        prompt_template:
+        - id: 352e54eb-9e7f-4af4-947a-7f49e6d002fb
+          role: system
+          text: '与えられたテキスト群から、
+
+            「最近登場・注目されている用語・概念・略語」
+
+            のみを抽出してください。
+
+
+            - 単語を抽出
+
+            - 可能なら英語表記も併記
+
+            - 出力はJSON配列
+
+            '
+        - id: 7879a3c8-9cd3-4c8e-93cf-eb656d21bbb5
+          role: user
+          text: '{{#context#}}'
+        selected: false
+        structured_output:
+          schema:
+            additionalProperties: false
+            properties:
+              words:
+                description: 抽出された用語の文字列配列
+                items:
+                  type: string
+                type: array
+            required: []
+            type: object
+        structured_output_enabled: true
+        title: 検索結果から用語を抽出
+        type: llm
+        vision:
+          enabled: false
+      height: 88
+      id: '1769184011047'
+      position:
+        x: 1240.3388020882621
+        y: 937.1340998927078
+      positionAbsolute:
+        x: 1240.3388020882621
+        y: 937.1340998927078
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        is_team_authorization: true
+        paramSchemas:
+        - auto_generate: null
+          default: null
+          form: llm
+          human_description:
+            en_US: The text input used for initiating searches on the web, focusing
+              on delivering relevant and accurate results without compromising user
+              privacy.
+            ja_JP: The text input used for initiating searches on the web, focusing
+              on delivering relevant and accurate results without compromising user
+              privacy.
+            pt_BR: A entrada de texto usada para iniciar pesquisas na web, focada
+              em entregar resultados relevantes e precisos sem comprometer a privacidade
+              do usuário.
+            zh_Hans: 用于在网上启动搜索的文本输入，专注于提供相关且准确的结果，同时不妨碍用户隐私。
+          label:
+            en_US: Query string
+            ja_JP: Query string
+            pt_BR: Query string
+            zh_Hans: 查询语句
+          llm_description: Keywords or phrases entered to perform searches, aimed
+            at providing relevant and precise results while ensuring the privacy of
+            the user is maintained.
+          max: null
+          min: null
+          name: query
+          options: []
+          placeholder: null
+          precision: null
+          required: true
+          scope: null
+          template: null
+          type: string
+        - auto_generate: null
+          default: 3
+          form: llm
+          human_description:
+            en_US: The number of search results to return, allowing users to control
+              the breadth of their search output.
+            ja_JP: The number of search results to return, allowing users to control
+              the breadth of their search output.
+            pt_BR: O número de resultados de pesquisa a serem retornados, permitindo
+              que os usuários controlem a amplitude de sua saída de pesquisa.
+            zh_Hans: 要返回的搜索结果数量，允许用户控制他们搜索输出的广度。
+          label:
+            en_US: Result count
+            ja_JP: Result count
+            pt_BR: Contagem de resultados
+            zh_Hans: 结果数量
+          llm_description: Specifies the amount of search results to be displayed,
+            offering users the ability to adjust the scope of their search findings.
+          max: null
+          min: null
+          name: count
+          options: []
+          placeholder: null
+          precision: null
+          required: false
+          scope: null
+          template: null
+          type: number
+        - auto_generate: null
+          default: true
+          form: form
+          human_description:
+            en_US: Ensure the JSON output is ASCII encoded
+            ja_JP: Ensure the JSON output is ASCII encoded
+            pt_BR: Ensure the JSON output is ASCII encoded
+            zh_Hans: 确保输出的 JSON 是 ASCII 编码
+          label:
+            en_US: Ensure ASCII
+            ja_JP: Ensure ASCII
+            pt_BR: Ensure ASCII
+            zh_Hans: 确保 ASCII
+          llm_description: ''
+          max: null
+          min: null
+          name: ensure_ascii
+          options: []
+          placeholder: null
+          precision: null
+          required: false
+          scope: null
+          template: null
+          type: boolean
+        params:
+          count: ''
+          ensure_ascii: ''
+          query: ''
+        plugin_id: langgenius/brave
+        plugin_unique_identifier: langgenius/brave:0.0.2@4ebd53fd3353a4c9ee3107587ab40a928162fb5578a72f01f9fdc1ae58f79197
+        provider_icon: https://cloud.dify.ai/console/api/workspaces/current/plugin/icon?tenant_id=0d097182-9ffa-444c-a3e2-3b410d924684&filename=60bd4c373e2f435e279270e1d14b53585a8eb01735e53aa733ef9e7563f040f9.svg
+        provider_id: langgenius/brave/brave
+        provider_name: langgenius/brave/brave
+        provider_type: builtin
+        selected: false
+        title: BraveSearch
+        tool_configurations:
+          ensure_ascii:
+            type: constant
+            value: false
+        tool_description: BraveSearch is a privacy-focused search engine that leverages
+          its own index to deliver unbiased, independent, and fast search results.
+          It's designed to respect user privacy by not tracking searches or personal
+          information, making it a secure choice for those concerned about online
+          privacy.
+        tool_label: BraveSearch
+        tool_name: brave_search
+        tool_node_version: '2'
+        tool_parameters:
+          count:
+            type: constant
+            value: 3
+          query:
+            type: mixed
+            value: 最新 技術 用語 注目 IT
+        type: tool
+      height: 88
+      id: '1769186917543'
+      position:
+        x: 205.0062607474233
+        y: 936.1399990908709
+      positionAbsolute:
+        x: 205.0062607474233
+        y: 936.1399990908709
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        context:
+          enabled: true
+          variable_selector:
+          - '1769186917543'
+          - text
+        model:
+          completion_params:
+            temperature: 0.7
+          mode: chat
+          name: gemini-2.5-flash-lite
+          provider: langgenius/gemini/google
+        prompt_template:
+        - id: ca47ac9f-b50a-4336-845d-7fe5991a8ebc
+          role: system
+          text: 与えられたBraveSearchAPIの出力結果から検索で取得されたURLの配列を抽出してJSONで出力してください。
+        - id: 466af380-a3b4-4b3d-9e61-a7765bb322e3
+          role: user
+          text: '{{#context#}}'
+        retry_config:
+          max_retries: 3
+          retry_enabled: true
+          retry_interval: 1000
+        selected: false
+        structured_output:
+          schema:
+            additionalProperties: false
+            properties:
+              urls:
+                description: 抽出されたURLの配列
+                items:
+                  type: string
+                type: array
+            required: []
+            type: object
+        structured_output_enabled: true
+        title: URL抽出
+        type: llm
+        vision:
+          enabled: false
+      height: 118
+      id: '1769188060907'
+      position:
+        x: 495.10961562971966
+        y: 936.1399990908709
+      positionAbsolute:
+        x: 495.10961562971966
+        y: 936.1399990908709
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        error_handle_mode: terminated
+        flatten_output: true
+        height: 210
+        is_parallel: true
+        iterator_input_type: object
+        iterator_selector:
+        - '1769188060907'
+        - structured_output
+        - urls
+        output_selector:
+        - '1769188527876'
+        - body
+        output_type: array[string]
+        parallel_nums: 10
+        selected: false
+        start_node_id: 1769188492411start
+        title: URLをすべて検索
+        type: iteration
+        width: 386
+      height: 210
+      id: '1769188492411'
+      position:
+        x: 799.2341662708072
+        y: 936.1399990908709
+      positionAbsolute:
+        x: 799.2341662708072
+        y: 936.1399990908709
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 386
+      zIndex: 1
+    - data:
+        desc: ''
+        isInIteration: true
+        selected: false
+        title: ''
+        type: iteration-start
+      draggable: false
+      height: 48
+      id: 1769188492411start
+      parentId: '1769188492411'
+      position:
+        x: 24
+        y: 68
+      positionAbsolute:
+        x: 823.2341662708072
+        y: 1004.1399990908709
+      selectable: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom-iteration-start
+      width: 44
+      zIndex: 1002
+    - data:
+        authorization:
+          config: null
+          type: no-auth
+        body:
+          data: []
+          type: none
+        headers: User-Agent:Mozilla/5.0
+        isInIteration: true
+        isInLoop: false
+        iteration_id: '1769188492411'
+        method: get
+        params: ''
+        retry_config:
+          max_retries: 3
+          retry_enabled: true
+          retry_interval: 100
+        selected: false
+        ssl_verify: true
+        timeout:
+          max_connect_timeout: 0
+          max_read_timeout: 0
+          max_write_timeout: 0
+        title: HTTP リクエスト
+        type: http-request
+        url: '{{#1769188492411.item#}}'
+        variables: []
+      height: 124
+      id: '1769188527876'
+      parentId: '1769188492411'
+      position:
+        x: 114.94174155055828
+        y: 46
+      positionAbsolute:
+        x: 914.1759078213655
+        y: 982.1399990908709
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+      zIndex: 1002
+    - data:
+        context:
+          enabled: true
+          variable_selector:
+          - '1769184011047'
+          - structured_output
+          - words
+        model:
+          completion_params:
+            temperature: 0.7
+          mode: chat
+          name: gemini-2.5-flash-lite
+          provider: langgenius/gemini/google
+        prompt_config:
+          jinja2_variables: []
+        prompt_template:
+        - edition_type: basic
+          id: 208ee090-298b-4c73-92cb-2b4e6b35cdab
+          role: system
+          text: '- あなたは厳密なJSONのみを出力する
+
+            - あなたは世界を驚かせる革新的なゲームを開発するゲームデザイナーです
+
+            -『良いゲーム』ではなく『おもしろい（心が動く）ゲーム』に振り切ってください'
+        - id: 96424112-7e93-444a-98d9-0228b925f012
+          role: user
+          text: '{{#1769063124127.game_theme#}}をテーマにしたゲームの企画アイデアの種を考えます。
+
+            「〇〇を□□して(手段)、××を△△する(目的)のゲーム」
+
+            として表せるゲームのアイデアを10個生成してください。
+
+            考える際に{{#context#}}の用語の中からランダムなものを抽出して、その要素を組み合わせてアイデアを生成してください。'
+        retry_config:
+          max_retries: 3
+          retry_enabled: true
+          retry_interval: 1000
+        selected: false
+        structured_output:
+          schema:
+            additionalProperties: false
+            properties:
+              idea_list:
+                description: 「〇〇を□□して(手段)、××を△△する(目的)のゲーム」という形式の文字列を要素とする配列
+                items:
+                  type: string
+                type: array
+            required:
+            - idea_list
+            type: object
+        structured_output_enabled: true
+        title: 用語とEMSフレームワークで企画抽出
+        type: llm
+        vision:
+          enabled: false
+      height: 118
+      id: '17692203989340'
+      position:
+        x: 1531.2120839018448
+        y: 936.1399990908709
+      positionAbsolute:
+        x: 1531.2120839018448
+        y: 936.1399990908709
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        error_handle_mode: continue-on-error
+        flatten_output: true
+        height: 226
+        is_parallel: false
+        iterator_input_type: array[object]
+        iterator_selector:
+        - '1769445168501'
+        - output
+        output_selector:
+        - '17692223200090'
+        - text
+        output_type: array[string]
+        parallel_nums: 10
+        selected: false
+        start_node_id: 1769222306776start
+        title: 企画書のjsonデータからペラ１企画書を生成
+        type: iteration
+        width: 392
+      height: 226
+      id: '1769222306776'
+      position:
+        x: 3546.6851211960407
+        y: -492.6460242973951
+      positionAbsolute:
+        x: 3546.6851211960407
+        y: -492.6460242973951
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 392
+      zIndex: 1
+    - data:
+        desc: ''
+        isInIteration: true
+        selected: false
+        title: ''
+        type: iteration-start
+      draggable: false
+      height: 48
+      id: 1769222306776start
+      parentId: '1769222306776'
+      position:
+        x: 24
+        y: 68
+      positionAbsolute:
+        x: 3570.6851211960407
+        y: -424.6460242973951
+      selectable: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom-iteration-start
+      width: 44
+      zIndex: 1002
+    - data:
+        context:
+          enabled: true
+          variable_selector:
+          - '1769222306776'
+          - item
+        isInIteration: true
+        model:
+          completion_params:
+            temperature: 0.4
+          mode: chat
+          name: gemini-3-pro-image-preview
+          provider: langgenius/gemini/google
+        prompt_template:
+        - id: 1951555f-81eb-42e2-a286-ce05e8ce30a8
+          role: system
+          text: '# Role
+
+            あなたは、ヒット作を連発する「ベテランゲームプロデューサー」であり、優秀な「コピーライター」です。
+
+            提供された構造化データ（JSON）をもとに、読む人の心を一瞬で掴む「ペラ1枚のゲーム企画書（One-Page Pitch Document）」を画像として作成してください。
+
+
+            # Task
+
+            入力されたJSONデータには、ゲームの「魂（Core Identity）」「肉体（Creative）」「骨格（Mechanics）」が定義されています。
+
+            これらを統合し、画像形式で視覚的にメリハリのある企画書を出力してください。
+
+
+            # Guidelines
+
+            1.  **Format**: 読みやすさを最優先してください。見出し、箇条書き、太字、適度な絵文字を活用し、視線の動線を意識したレイアウトにすること。
+
+            2.  **Tone**: 自信に満ちた、かつ論理的なトーン。単なる仕様の説明ではなく、「なぜこのゲームが面白いのか」という**売り（Selling
+            Point）**を熱量高く伝えてください。
+
+            3.  **Volume**: A4用紙1枚（またはスクロール1〜2画面分）に収まる情報密度に要約・整理すること。
+
+            4.  **No JSON**: 出力結果にJSONコードブロックを含めないでください。純粋なドキュメントとして出力してください。
+
+
+            # Output Structure (Markdown Template)
+
+            以下の構成を意識して執筆してください。
+
+
+            ## 1. ヘッダーエリア
+
+            - **タイトル**: 大きく目立たせる（# H1）。
+
+            - **キャッチコピー**: `one_sentence_concept` をベースに、最もフックのある言葉で。
+
+            - **ジャンル**: 独創的なジャンル名を記載。
+
+
+            ## 2. コンセプト & ターゲット（Why）
+
+            - **概要**: `idea` をもとに、何をするゲームなのかを簡潔に。
+
+            - **ターゲット**: どんな感情を求めている人か (`target_user`)。
+
+            - **体験価値**: プレイ後に残る感情 (`ux_keywords`, `core_value_proposition`)。
+
+
+            ## 3. 世界観 & ビジュアル（Atmosphere）
+
+            - **世界設定**: `world_setting` を魅力的なナレーション風に。
+
+            - **アート & サウンド**: `graphic_art_taste`, `music_taste` をもとに、脳内に映像が浮かぶような描写。
+
+
+            ## 4. ゲームシステム（How & What）
+
+            - **コアメカニクス**: `core_system` と `game_cycle` をわかりやすく解説。
+
+            - **Game Feel**: 操作感 (`game_feel_keywords`) を強調し、触ったときの気持ちよさを伝える。
+
+
+            ## 5. 製品仕様（Specs）
+
+            - プラットフォーム、想定プレイ時間、技術要件などを表形式、またはコンパクトなリストで。
+
+
+            ---
+
+            **最後に**: この企画の最大の懸念点や特記事項 (`others`) があれば、プロデューサーコメントとして添える。'
+        - id: 1d4bfb9c-aaea-4b3c-9545-96232d1baeb1
+          role: user
+          text: '以下のJSONデータをもとに、最高にエキサイティングな「ペラ1ゲーム企画書」を作成してください。
+
+            画像形式で出力してください。
+
+
+            {{#context#}}'
+        retry_config:
+          max_retries: 3
+          retry_enabled: true
+          retry_interval: 5000
+        selected: false
+        structured_output_enabled: false
+        title: 企画書画像生成
+        type: llm
+        vision:
+          enabled: false
+      height: 118
+      id: '17692223200090'
+      parentId: '1769222306776'
+      position:
+        x: 108.93169727966233
+        y: 69.76092978783356
+      positionAbsolute:
+        x: 3655.616818475703
+        y: -422.88509450956155
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        error_handle_mode: terminated
+        flatten_output: false
+        height: 176
+        is_parallel: true
+        iterator_input_type: object
+        iterator_selector:
+        - '17693625766910'
+        - structured_output
+        - idea_list
+        output_selector:
+        - '1769223133886'
+        - structured_output
+        - idea_data
+        output_type: array[object]
+        parallel_nums: 10
+        selected: false
+        start_node_id: 1769222744303start
+        title: 企画をひとつづつ評価
+        type: iteration
+        width: 365
+      height: 176
+      id: '1769222744303'
+      position:
+        x: 1309.182991014975
+        y: -469
+      positionAbsolute:
+        x: 1309.182991014975
+        y: -469
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 365
+      zIndex: 1
+    - data:
+        desc: ''
+        isInIteration: true
+        selected: false
+        title: ''
+        type: iteration-start
+      draggable: false
+      height: 48
+      id: 1769222744303start
+      parentId: '1769222744303'
+      position:
+        x: 24
+        y: 68
+      positionAbsolute:
+        x: 1333.182991014975
+        y: -401
+      selectable: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom-iteration-start
+      width: 44
+      zIndex: 1002
+    - data:
+        context:
+          enabled: true
+          variable_selector:
+          - '1769222744303'
+          - item
+        isInIteration: true
+        isInLoop: false
+        iteration_id: '1769222744303'
+        model:
+          completion_params:
+            temperature: 0.3
+          mode: chat
+          name: gemini-3-pro-preview
+          provider: langgenius/gemini/google
+        prompt_template:
+        - id: f276c16a-73c1-410a-83d8-d7ad5d5504ce
+          role: system
+          text: '- あなたは厳密なJSONのみを出力する
+
+            - あなたは世界を驚かせる革新的なゲームを開発するゲームデザイナーです
+
+            -『良いゲーム』ではなく『おもしろい（心が動く）ゲーム』に価値を感じています'
+        - id: 90b4afee-1e8f-4ba3-939d-075ad46f4823
+          role: user
+          text: '{{#context#}}の「〇〇を□□して(手段)、××を△△する(目的)のゲーム」という文を
+
+            - 創作性
+
+            - 新規性
+
+            - ゲーム性
+
+            の観点で0～10の整数で点数付けして、文と点数の構造体として出力する'
+        selected: false
+        structured_output:
+          schema:
+            additionalProperties: false
+            properties:
+              idea_data:
+                additionalProperties: false
+                description: ''
+                properties:
+                  idea:
+                    description: 「〇〇を□□して(手段)、××を△△する(目的)のゲーム」という形式のゲームのアイデアを示すテキストです。
+                    type: string
+                  score:
+                    description: deaの面白さを評価したスコアです。1～10の整数で点数をつけます。
+                    type: number
+                required:
+                - idea
+                - score
+                type: object
+            required:
+            - idea_data
+            type: object
+        structured_output_enabled: true
+        title: 企画評価
+        type: llm
+        vision:
+          enabled: false
+      height: 88
+      id: '1769223133886'
+      parentId: '1769222744303'
+      position:
+        x: 106.88787342763362
+        y: 69
+      positionAbsolute:
+        x: 1416.0708644426086
+        y: -400
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+      zIndex: 1002
+    - data:
+        context:
+          enabled: true
+          variable_selector:
+          - '1769063124127'
+          - game_theme
+        model:
+          completion_params:
+            temperature: 1.2
+          mode: chat
+          name: gemini-3-pro-preview
+          provider: langgenius/gemini/google
+        prompt_template:
+        - id: 7036872e-956d-41f3-bb75-5edbcdfd49c2
+          role: system
+          text: '- あなたは厳密なJSONのみを出力する
+
+            - あなたは幅広い知識を持った伝説的なアイデアマンです'
+        - id: 092a60df-91b5-41e9-a984-329764188814
+          role: user
+          text: 「{{#context#}}」というお題と関連する・連想される単語、キーワードを8つ考えて文字列配列として出力して
+        retry_config:
+          max_retries: 3
+          retry_enabled: true
+          retry_interval: 1000
+        selected: false
+        structured_output:
+          schema:
+            additionalProperties: false
+            properties:
+              sector_words:
+                description: お題に関連する用語、単語
+                items:
+                  type: string
+                type: array
+            required:
+            - sector_words
+            type: object
+        structured_output_enabled: true
+        title: マンダラーチャート中心
+        type: llm
+        vision:
+          enabled: false
+      height: 118
+      id: '1769333078497'
+      position:
+        x: 208.92448377746484
+        y: -451.0173965560497
+      positionAbsolute:
+        x: 208.92448377746484
+        y: -451.0173965560497
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        error_handle_mode: terminated
+        flatten_output: true
+        height: 176
+        is_parallel: true
+        iterator_input_type: object
+        iterator_selector:
+        - '1769333078497'
+        - structured_output
+        - sector_words
+        output_selector:
+        - '1769333890967'
+        - structured_output
+        - element_words
+        output_type: array[object]
+        parallel_nums: 10
+        selected: false
+        start_node_id: 1769333867638start
+        title: マンダラーチャート外周生成
+        type: iteration
+        width: 386
+      height: 176
+      id: '1769333867638'
+      position:
+        x: 522.1342184197606
+        y: -451.0173965560497
+      positionAbsolute:
+        x: 522.1342184197606
+        y: -451.0173965560497
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 386
+      zIndex: 1
+    - data:
+        desc: ''
+        isInIteration: true
+        selected: false
+        title: ''
+        type: iteration-start
+      draggable: false
+      height: 48
+      id: 1769333867638start
+      parentId: '1769333867638'
+      position:
+        x: 24
+        y: 68
+      positionAbsolute:
+        x: 546.1342184197606
+        y: -383.0173965560497
+      selectable: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom-iteration-start
+      width: 44
+      zIndex: 1002
+    - data:
+        context:
+          enabled: true
+          variable_selector:
+          - '1769333867638'
+          - item
+        isInIteration: true
+        isInLoop: false
+        iteration_id: '1769333867638'
+        model:
+          completion_params:
+            temperature: 1.2
+          mode: chat
+          name: gemini-3-pro-preview
+          provider: langgenius/gemini/google
+        prompt_template:
+        - id: dc16428e-eeff-4a0f-9e82-d5ff14e7b284
+          role: system
+          text: '- あなたは厳密なJSONのみを出力する
+
+            - あなたは幅広い知識を持った伝説的なアイデアマンです'
+        - id: 2ec7b3e4-24db-4d2d-bd90-b2a68b2a8a5a
+          role: user
+          text: '「{{#context#}}」というお題と関連する・連想される単語、キーワードを8つ考えて文字列配列として出力して。
+
+            ただし、「{{#1769063124127.game_theme#}}」とは異なる単語、キーワードにすること。'
+        selected: false
+        structured_output:
+          schema:
+            additionalProperties: false
+            properties:
+              element_words:
+                description: sctor_wordから連想された用語、単語の配列
+                items:
+                  type: string
+                type: array
+            required:
+            - element_words
+            type: object
+        structured_output_enabled: true
+        title: マンダラーチャート外周
+        type: llm
+        vision:
+          enabled: false
+      height: 88
+      id: '1769333890967'
+      parentId: '1769333867638'
+      position:
+        x: 101.57993783506811
+        y: 65.70260329000598
+      positionAbsolute:
+        x: 623.7141562548287
+        y: -385.3147932660437
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+      zIndex: 1002
+    - data:
+        context:
+          enabled: true
+          variable_selector:
+          - '1769333867638'
+          - output
+        model:
+          completion_params:
+            temperature: 0.9
+          mode: chat
+          name: gemini-3-pro-preview
+          provider: langgenius/gemini/google
+        prompt_config:
+          jinja2_variables: []
+        prompt_template:
+        - edition_type: basic
+          id: 208ee090-298b-4c73-92cb-2b4e6b35cdab
+          role: system
+          text: '- あなたは厳密なJSONのみを出力する
+
+            - あなたは世界を驚かせる革新的なゲームを開発するゲームデザイナーです
+
+            -『良いゲーム』ではなく『おもしろい（心が動く）ゲーム』に振り切ってください'
+        - edition_type: basic
+          id: 96424112-7e93-444a-98d9-0228b925f012
+          role: user
+          text: '{{#1769063124127.game_theme#}}テーマにしたゲームの企画アイデアの種を考えます。
+
+            「〇〇を□□して(手段)、××を△△する(目的)のゲーム」
+
+            として表せるゲームのアイデアを{{#1769063124127.generate_count#}}個生成してください。
+
+            ゲームのアイデアを考える際に、{{#context#}}のキーワードを参考にしてください。'
+        retry_config:
+          max_retries: 3
+          retry_enabled: false
+          retry_interval: 1000
+        selected: false
+        structured_output:
+          schema:
+            additionalProperties: false
+            properties:
+              idea_list:
+                description: 「〇〇を□□して(手段)、××を△△する(目的)のゲーム」という形式の文字列を要素とする配列
+                items:
+                  type: string
+                type: array
+            required:
+            - idea_list
+            type: object
+        structured_output_enabled: true
+        title: EMSフレームワークでマンダラーチャートから企画抽出
+        type: llm
+        vision:
+          enabled: false
+      height: 88
+      id: '17693625766910'
+      position:
+        x: 980.3314397428585
+        y: -451.0173965560497
+      positionAbsolute:
+        x: 980.3314397428585
+        y: -451.0173965560497
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        code: "def main(input_data: list, generate_count: int) -> dict:\n    \n  \
+          \  # input_data は既にリスト（Array[Object]）として届いているので\n    # 直接ソート処理に入れるよ\n  \
+          \  \n    # 1. スコアで降順ソート\n    # リスト内の各要素（辞書）から 'score' を取得して比較する\n    sorted_items\
+          \ = sorted(input_data, key=lambda x: x.get('score', 0), reverse=True)\n\
+          \    \n    # 2. 指定された件数(generate_count)だけ上位から切り出し\n    top_items = sorted_items[:generate_count]\n\
+          \    \n    # 3. 'idea' の文字列だけを抽出\n    idea_list = [item.get('idea', '')\
+          \ for item in top_items]\n    \n    return {\n        \"result\": idea_list\n\
+          \    }"
+        code_language: python3
+        outputs:
+          result:
+            children: null
+            type: array[string]
+        selected: false
+        title: Pythonで評価された企画の上位を抽出
+        type: code
+        variables:
+        - value_selector:
+          - '1769222744303'
+          - output
+          value_type: array[object]
+          variable: input_data
+        - value_selector:
+          - '1769063124127'
+          - extract_count
+          value_type: number
+          variable: generate_count
+      height: 52
+      id: '1769368005928'
+      position:
+        x: 1761.8968057111465
+        y: -469
+      positionAbsolute:
+        x: 1761.8968057111465
+        y: -469
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        error_handle_mode: terminated
+        flatten_output: true
+        height: 392
+        is_parallel: true
+        iterator_input_type: array[string]
+        iterator_selector:
+        - '1769368005928'
+        - result
+        output_selector:
+        - '17702111425890'
+        - text
+        output_type: array[string]
+        parallel_nums: 10
+        selected: false
+        start_node_id: 1769445168501start
+        title: EMSアイデアを企画書に変換
+        type: iteration
+        width: 1408.6028423177868
+      height: 392
+      id: '1769445168501'
+      position:
+        x: 2060.6605932614175
+        y: -478.76981285132115
+      positionAbsolute:
+        x: 2060.6605932614175
+        y: -478.76981285132115
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 1409
+      zIndex: 1
+    - data:
+        desc: ''
+        isInIteration: true
+        selected: false
+        title: ''
+        type: iteration-start
+      draggable: false
+      height: 48
+      id: 1769445168501start
+      parentId: '1769445168501'
+      position:
+        x: 24
+        y: 68
+      positionAbsolute:
+        x: 2084.6605932614175
+        y: -410.76981285132115
+      selectable: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom-iteration-start
+      width: 44
+      zIndex: 1002
+    - data:
+        context:
+          enabled: true
+          variable_selector:
+          - '1769445168501'
+          - item
+        isInIteration: true
+        isInLoop: false
+        iteration_id: '1769445168501'
+        model:
+          completion_params:
+            temperature: 0.9
+          mode: chat
+          name: gemini-3-pro-preview
+          provider: langgenius/gemini/google
+        prompt_template:
+        - id: 39189f95-39a8-4ed3-a4cf-4a8a7683a747
+          role: system
+          text: "# Role\nあなたは、数々のヒット作の核を作り上げてきた「リード・コンセプト・アーキテクト」です。\n「手段（アクション）」と「目的（ゴール）」が提示された断片的なアイデアから、プレイヤーの感情を揺さぶる「ゲームの魂（Core\
+            \ Identity）」を抽出・言語化するのがあなたの仕事です。\n\n# Context: EMS Framework Phase 1\n\
+            このプロセスは、EMS（Emotion-Mechanics-System）フレームワークの「Phase 1: Core Identity（魂）」に該当します。\n\
+            入力されたアイデアを深掘りし、後続のフェーズ（肉体・骨格）の指針となる、論理的かつ創造的なコアを定義してください。\n\n# Task\n\
+            入力された `idea` をもとに、指定されたJSONスキーマに従ってゲームのアイデンティティ情報を生成してください。\n\n# Output\
+            \ Requirements & Constraints\n1. **one_sentence_concept**: 「〇〇（手段）して××（目的）する」という構造を維持しつつ、そのギャップや意外性が一目で伝わるキャッチコピーにしてください。\n\
+            2. **genre**: 「アクション」などの既存名ではなく、ゲーム内容を最もよく表す「新しいジャンル名」を造語してください。\n3. **target_user**:\
+            \ 単なる年齢層ではなく、「〇〇な体験に飢えている人」「深夜に静かに癒やされたい人」のように、具体的なペルソナを記述してください。\n4.\
+            \ **ux_keywords**: プレイヤーに抱かせたい特定の感情を3〜5個厳選してください。\n5. **core_value_proposition**:\
+            \ 他のゲームにはない「独自の面白さ」を論理的に解説してください。\n6. **Formatting**: 出力は必ず以下のJSON形式のみとしてください。解説や挨拶は一切不要です。\n\
+            \n# JSON Schema\n{\n  \"core_identity\": {\n    \"one_sentence_concept\"\
+            : \"string\",\n    \"genre\": \"string\",\n    \"target_user\": \"string\"\
+            ,\n    \"ux_keywords\": [\"string (3-5 items)\"],\n    \"core_value_proposition\"\
+            : \"string\"\n  }\n}"
+        - id: 432fceb7-3fb2-4faa-937c-2189a5eea21c
+          role: user
+          text: '以下のゲームアイデアをもとに、Phase 1: Core Identity を定義したJSONを出力してください。
+
+
+            {{#context#}}
+
+
+            ※出力はJSON形式のスキーマに従ってください。
+
+            '
+        selected: false
+        structured_output:
+          schema:
+            properties:
+              core_identity:
+                description: ゲームの核となるアイデンティティ情報群。
+                properties:
+                  core_value_proposition:
+                    description: このゲームならではの独自の面白さ（なぜそれが楽しいのか）の解説。
+                    type: string
+                  genre:
+                    description: ゲームの主要なジャンル名。既存の枠組みに囚われず、ゲーム性を表す新しいジャンル名を推奨する。
+                    type: string
+                  one_sentence_concept:
+                    description: 「手段」と「目的」のギャップや面白さを端的に表現した、ゲームの核心を突くキャッチコピー。一言で表現すること。
+                    type: string
+                  target_user:
+                    description: どのような層に響くゲームか。年齢層、嗜好、あるいは『〇〇という体験を求めている人』といった具体的ペルソナ。
+                    type: string
+                  ux_keywords:
+                    description: プレイヤーに抱かせたい特定の感情や体験価値を示すキーワード（例：焦燥感、全能感、静かな癒やし、知的な優越感など）。2〜5個出力。
+                    items:
+                      type: string
+                    maxItems: 5
+                    minItems: 3
+                    type: array
+                required:
+                - one_sentence_concept
+                - genre
+                - target_user
+                - ux_keywords
+                - core_value_proposition
+                type: object
+            required:
+            - core_identity
+            type: object
+        structured_output_enabled: true
+        title: コアアイデアを抽出
+        type: llm
+        vision:
+          enabled: false
+      height: 88
+      id: '1769445210518'
+      parentId: '1769445168501'
+      position:
+        x: 107.5
+        y: 73.99999999999994
+      positionAbsolute:
+        x: 2168.1605932614175
+        y: -404.7698128513212
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+      zIndex: 1002
+    - data:
+        context:
+          enabled: true
+          variable_selector:
+          - '1769445210518'
+          - structured_output
+        isInIteration: true
+        model:
+          completion_params:
+            temperature: 0.9
+          mode: chat
+          name: gemini-3-pro-preview
+          provider: langgenius/gemini/google
+        prompt_template:
+        - id: 6acfe584-8dbc-4a99-acc7-a61823837f11
+          role: system
+          text: "# Role\nあなたは、独創的な世界観を構築する「クリエイティブ・ディレクター」兼「世界設定考案者」です。\nPhase 1で定義された「ゲームの魂（Core\
+            \ Identity）」に基づき、そのコンセプトが最も輝くための「肉体（世界観・ビジュアル・サウンド）」を設計することが任務です。\n\n\
+            # Context: EMS Framework Phase 2\nこれはEMSフレームワークの「Phase 2: Creative & Atmosphere（肉体）」です。\n\
+            単に美しい設定を作るのではなく、Phase 1の「手段」と「目的」に圧倒的な説得力と没入感を与える外装を定義してください。\n\n# Task\n\
+            入力された `core_identity` を読み解き、指定されたJSONスキーマに従って `creative_and_atmosphere`\
+            \ を生成してください。\n\n# Output Requirements & Constraints\n1. **title**: コンセプトが一瞬で伝わり、プレイヤーの記憶にこびりつく印象的なタイトルを冠してください。\n\
+            2. **world_setting**: なぜその「手段」でその「目的」を達成しなければならないのか？その行動が「必然」となる時代背景、物理法則、社会情勢を構築してください。\n\
+            3. **graphic_art_taste**: `ux_keywords`（感情）を視覚的に増幅させるスタイルを提案してください。質感やライティング、色相環の傾向まで具体的に記述すること。\n\
+            4. **music_taste**: プレイヤーを特定の感情へ誘導するための楽器構成、BGMの展開、環境音の活用法を定義してください。\n\
+            5. **Formatting**: 出力は必ず以下のJSON形式のみとしてください。解説や挨拶は一切不要です。\n6. **Data Integrity**:\
+            \ 入力された `core_identity` の内容は一切変更せず、そのまま保持した上で `creative_and_atmosphere`\
+            \ を追加して出力してください。\n\n# JSON Schema\n{\n  \"creative_and_atmosphere\": {\n\
+            \    \"title\": \"string\",\n    \"world_setting\": \"string\",\n    \"\
+            graphic_art_taste\": \"string\",\n    \"music_taste\": \"string\"\n  }\n\
+            }"
+        - id: 52536c94-c3e5-4a6f-b624-cc0b032c5031
+          role: user
+          text: '以下の Phase 1: Core Identity のデータとMESアイデアに基づき、Phase 2: Creative & Atmosphere
+            を生成してください。
+
+            既存の core_identity を保持し、creative_and_atmosphere オブジェクトを追加した完全なJSONを出力してください。
+
+
+            {{#1769445168501.item#}}
+
+
+            {{#context#}}'
+        selected: false
+        structured_output:
+          schema:
+            properties:
+              creative_and_atmosphere:
+                description: フェーズ2：ゲームの外装（肉体）。世界観、ビジュアル、サウンドがどのようにCore Identityを補強するかを定義します。
+                properties:
+                  graphic_art_taste:
+                    description: UXキーワードを視覚的に増幅させるためのアートスタイル。質感、色使い、ライティングの方向性など（例：ネオンが滲む雨のサイバーパンク、ザラついたモノクロのドット絵など）。
+                    type: string
+                  music_taste:
+                    description: プレイヤーの感情を目的の方向へ誘導するためのサウンドデザイン。使用楽器、テンポ、ジャンル、環境音の活用方法など。
+                    type: string
+                  title:
+                    description: コンセプトと世界観を象徴し、一読して世界観が伝わる印象的なタイトル。
+                    type: string
+                  world_setting:
+                    description: 時代背景、場所、独特の物理法則や社会情勢など。ideaの『手段』と『目的』が成立するために必然性のある舞台設定を記述してください。
+                    type: string
+                required:
+                - title
+                - world_setting
+                - graphic_art_taste
+                - music_taste
+                type: object
+            required:
+            - creative_and_atmosphere
+            type: object
+        structured_output_enabled: true
+        title: 体験の肉付け情報を生成
+        type: llm
+        vision:
+          enabled: false
+      height: 88
+      id: '17694479645720'
+      parentId: '1769445168501'
+      position:
+        x: 395.93478762136783
+        y: 72.99999999999994
+      positionAbsolute:
+        x: 2456.5953808827853
+        y: -405.7698128513212
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        isInIteration: true
+        model:
+          completion_params:
+            temperature: 0.9
+          mode: chat
+          name: gemini-3-pro-preview
+          provider: langgenius/gemini/google
+        prompt_template:
+        - id: 21a287d9-eeb8-4af0-a564-1b28c773c31c
+          role: system
+          text: '# Role
+
+            あなたは、独創的なアイデアを実装可能な仕様へと落とし込む「リードゲームデザイナー」兼「テクニカルディレクター」です。
+
+            抽象的な「感情（Core Identity）」や「世界観（Creative）」を、具体的な「ルール」「動作」「技術要件」に翻訳する高度なスキルを持っています。
+
+
+
+            # Task
+
+            入力として与えられたJSONデータに基づき、ゲームの構造と実装要件を定義する「mechanics_and_specifications」を生成してください。
+
+            最終的に、入力された情報を保持しつつ、新たな要素を追加した完全なJSONを出力してください。
+
+
+
+            # Input Data Structure
+
+            入力JSONには以下が含まれています：
+
+            1. `idea`: ゲームアイデアの要約
+
+            2. `core_identity`: ターゲット、UXキーワード、提供価値（魂）
+
+            3. `creative_and_atmosphere`: タイトル、世界観、アート、音楽（肉体）
+
+
+
+            # Output Data Structure (Requirements)
+
+            入力内容をそのまま保持し、新たに `mechanics_and_specifications` オブジェクトを追加して出力してください。
+
+            **注意: `idea`, `core_identity`, `creative_and_atmosphere` の内容は絶対に変更せず、そのまま出力に含めてください。**
+
+
+
+            ## 新規生成項目: `mechanics_and_specifications`
+
+            1. **core_system**: `idea`の「手段」を具体的なゲームルールとして記述。どう操作し、どう判定されるか。
+
+            2. **game_cycle**: ユーザー体験のループ構造（例：探索→戦闘→収集→強化）。
+
+            3. **game_feel_keywords**: 操作感（Juice）を表す擬音や形容詞（例：ヌルヌル、重厚、パキパキ）。**1〜3つ**厳選。
+
+            4. **screen_composition**: カメラ視点（FPS/TPS/Top-down/Side-scroling）と画面情報の構成。
+
+            5. **target_platforms**: UXキーワードと操作系に最適なプラットフォーム。
+
+            6. **technical_requirements**: この遊びを実現するために不可欠な技術要素（物理演算、大量描画、同期、AI等）。
+
+            7. **estimated_play_time**: 1プレイの密度と全体のボリューム感。
+
+            8. **others**: 開発上のリスクや特記事項。
+
+
+
+            # Thinking Process & Constraints
+
+            - **整合性**: `core_system`は、Phase 1の`ux_keywords`（感情）を喚起できるメカニクスになっているか？
+
+            - **実現性**: `technical_requirements`は、現代のゲームエンジン（Unity/Unreal）で実装可能か？夢物語になっていないか？
+
+            - **具体性**: 「面白いシステム」といった曖昧な言葉を使わず、「〇〇すると××が変化するシステム」のように具体的に書くこと。
+
+            - **JSON形式**: 出力はJSONのみ。Markdownや説明文は不要。'
+        - id: dab8bd1e-3abb-4696-b1fb-46a515e40ea3
+          role: user
+          text: '以下のコンテキストに基づき、 Mechanics & Specifications を含む完全なJSONを生成してください。
+
+
+            {{#1769445210518.structured_output#}}
+
+
+            {{#17694479645720.structured_output#}}'
+        selected: false
+        structured_output:
+          schema:
+            properties:
+              mechanics_and_specifications:
+                description: フェーズ3：ゲームの構造と実装要件。遊びの具体化と開発環境の定義。
+                properties:
+                  core_system:
+                    description: 核となるゲームルール。ideaの『手段』をどのように遊びとして成立させるかの具体的定義。
+                    type: string
+                  estimated_play_time:
+                    description: 想定プレイ時間。1セッションの長さ、およびクリアまでの全体ボリューム。
+                    type: string
+                  game_cycle:
+                    description: プレイヤーが何を繰り返し、どう成長・進行していくかの流れ（コアループ）。
+                    type: string
+                  game_feel_keywords:
+                    description: 操作したときの感触（Game Feel, Juice）を示すキーワード（例：ずっしり、スピーディー、なめらかで滑る感じ
+                      等）。1つから３つまで
+                    items:
+                      type: string
+                    type: array
+                  others:
+                    description: 上記に含まれない特筆すべき事項や、開発上の懸念・補足事項。
+                    type: string
+                  screen_composition:
+                    description: 画面構成概要。2D/3D、カメラ視点（一人称、トップダウン、横スクロール等）の定義。
+                    type: string
+                  target_platforms:
+                    description: PC、モバイル、コンソール、VRなど、このゲームのプラットフォーム。
+                    items:
+                      type: string
+                    type: array
+                  technical_requirements:
+                    description: ネットワーク、物理演算、パスファインディングなど、この遊びを実現するための技術的前提条件。
+                    type: string
+                required:
+                - core_system
+                - game_cycle
+                - game_feel_keywords
+                - screen_composition
+                - target_platforms
+                - technical_requirements
+                - estimated_play_time
+                - others
+                type: object
+            required:
+            - mechanics_and_specifications
+            type: object
+        structured_output_enabled: true
+        title: これまでの情報をもとに構造と実装要件を生成
+        type: llm
+        vision:
+          enabled: false
+      height: 88
+      id: '17694498269100'
+      parentId: '1769445168501'
+      position:
+        x: 705.6655413991894
+        y: 73.87926927652347
+      positionAbsolute:
+        x: 2766.326134660607
+        y: -404.8905435747977
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        isInIteration: true
+        isInLoop: false
+        iteration_id: '1769445168501'
+        model:
+          completion_params:
+            temperature: 0.8
+          mode: chat
+          name: gemini-3-pro-preview
+          provider: langgenius/gemini/google
+        prompt_template:
+        - id: 44f50466-6e8d-4408-aed4-877c073ddc6d
+          role: system
+          text: '# Role
+
+            あなたは、数々のヒット作を世に送り出してきた「熟練のゲームプロデューサー」兼「シニアゲームデザイナー」です。
+
+            入力された3つのフェーズ（Core Identity, Creative & Atmosphere, Mechanics & Specifications）のデータを統合し、開発チームや投資家がひと目で「このゲームは面白い！」と確信できる、論理的かつ情熱的なゲーム企画書をMarkdown形式で作成してください。
+
+
+            # Output Guidelines
+
+            1. **一貫性の確保**: 各フェーズで定義された「手段」と「目的」の繋がりを強調し、ゲーム体験（UX）に矛盾がないように記述してください。
+
+            2. **構造化**: Markdownの階層（# ## ###）を適切に使い、視認性を高めてください。
+
+            3. **トーン＆マナー**: プロフェッショナルでありながら、ゲームの世界観が伝わる創造的な表現を心がけてください。
+
+            4. **情報の増幅**: JSONの値をそのまま出力するのではなく、それらが組み合わさることでどのような「感情」や「体験」が生まれるのかを補足・解説してください。
+
+            5. **技術的実現性**: 仕様セクションでは、開発者が実装イメージを持てるよう、論理的な記述を徹底してください。
+
+
+            # Markdown Structure
+
+            - タイトル (H1)
+
+            - 1. エグゼクティブサマリー (コンセプト、ジャンル、ターゲット)
+
+            - 2. コア・バリュー (独自の面白さ、UXキーワード)
+
+            - 3. 世界観とアートワーク (舞台設定、ビジュアル、サウンド)
+
+            - 4. ゲームメカニクス (コアシステム、ゲームサイクル、操作感)
+
+            - 5. プロダクト仕様 (プラットフォーム、技術要件、ボリューム)'
+        - id: 456b2d27-bf7d-4a0b-be29-471fa592bec8
+          role: user
+          text: '以下の3つのデータセットをもとに、最高のゲーム企画書をMarkdown形式で書き上げてください。
+
+
+            ### 1. Core Identity (核となるアイデンティティ)
+
+            {{#1769445210518.structured_output#}}
+
+
+            ### 2. Creative & Atmosphere (外装と雰囲気)
+
+            {{#17694479645720.structured_output#}}
+
+
+            ### 3. Mechanics & Specifications (構造と実装要件)
+
+            {{#17694498269100.structured_output#}}
+
+
+            ---
+
+            ## 企画書作成の指示:
+
+            - タイトルは「Creative & Atmosphere」にある `title` を大きく掲げてください。
+
+            - 各セクションの解説には、適宜「UXキーワード」や「ゲームフィールの感触」を織り交ぜて、プレイの情景が浮かぶようにしてください。
+
+            - ターゲットプラットフォームや技術要件などは、見やすいようにリスト形式またはテーブル形式を活用してください。
+
+            - 最後に、このプロジェクトがなぜ今、作る価値があるのかを「Core Value Proposition」をベースに締めくくってください。'
+        selected: false
+        title: 企画書データをMarkDown形式に変換
+        type: llm
+        vision:
+          enabled: false
+      height: 88
+      id: '17702111425890'
+      parentId: '1769445168501'
+      position:
+        x: 1002.0762533685406
+        y: 74.61034697221936
+      positionAbsolute:
+        x: 3062.736846629958
+        y: -404.1594658791018
+      selected: true
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+      zIndex: 1002
+    viewport:
+      x: -2935.3045455284437
+      y: 815.0244501034797
+      zoom: 0.8705505632961253
+  rag_pipeline_variables: []
