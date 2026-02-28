@@ -140,7 +140,7 @@ async def run_pipeline(
         create_core_idea_agent(model),
         create_evaluation_agent(model),
         create_expansion_agent(model),
-        create_image_prompt_agent(model),
+        create_image_prompt_agent(model, language=config.generation.language),
     ]
 
     # SequentialAgent（パイプライン）構築

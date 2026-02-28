@@ -97,6 +97,9 @@ uv run game-pitch --topic "宇宙を舞台にした孤独なロボットの旅" 
 # 生成する企画書の枚数を指定（デフォルト: 3）
 uv run game-pitch --topic "宇宙を舞台にした孤独なロボットの旅" --num-pitches 5
 
+# 画像の言語を指定（ja: 日本語 / en: 英語）
+uv run game-pitch --topic "宇宙を舞台にした孤独なロボットの旅" --language en
+
 # 設定ファイルを指定
 uv run game-pitch --topic "..." --config path/to/config.yaml
 ```
@@ -108,6 +111,7 @@ uv run game-pitch --topic "..." --config path/to/config.yaml
 | `--topic` | ゲームアイデアのトピック（必須） | - |
 | `--mode` | 実行モード `test` / `prod` | `config.yaml` の設定値 |
 | `--num-pitches` | 生成する企画書の枚数 | `config.yaml` の設定値（3） |
+| `--language` | 企画書画像の言語 `ja` / `en` | `config.yaml` の設定値（`ja`） |
 | `--config` | 設定ファイルのパス | プロジェクトルートの `config.yaml` |
 
 ## 設定ファイル
@@ -130,6 +134,7 @@ generation:
   min_ideas_multiplier: 5  # CoreIdeaAgent が生成するアイデアの最小倍率
   image_width: 1024        # 画像の幅（px）
   image_height: 512        # 画像の高さ（px）
+  language: ja             # 企画書画像の言語: ja（日本語）/ en（英語）
 
 output:
   directory: output        # 出力ディレクトリ
@@ -176,4 +181,5 @@ game-pitch-agent/
 
 | バージョン | 日付 | 内容 |
 |-----------|------|------|
+| 0.1.1 | 2026-02-28 | 企画書画像の言語設定機能追加（`--language` オプション、`config.yaml` 対応、デフォルト日本語） ([Steering](Docs/Steering/add-language-option-20260228.md)) |
 | 0.1.0 | 2026-02-27 | 初回実装 ([Steering](Docs/Steering/progress_20260227.md)) |

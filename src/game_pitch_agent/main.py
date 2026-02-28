@@ -138,7 +138,8 @@ async def async_main(args: argparse.Namespace) -> int:
     # 設定読み込み
     config_path = args.config if hasattr(args, "config") and args.config else None
     mode_override = args.mode if hasattr(args, "mode") and args.mode else None
-    config = load_config(config_path=config_path, mode_override=mode_override)
+    language_override = args.language if hasattr(args, "language") and args.language else None
+    config = load_config(config_path=config_path, mode_override=mode_override, language_override=language_override)
 
     # num_pitches の上書き
     if hasattr(args, "num_pitches") and args.num_pitches:
@@ -159,6 +160,7 @@ async def async_main(args: argparse.Namespace) -> int:
     logger.info(f"  推論モデル: {config.inference_model}")
     logger.info(f"  画像生成モデル: {config.image_model}")
     logger.info(f"  生成枚数: {config.generation.num_pitches}")
+    logger.info(f"  画像言語: {config.generation.language}")
     logger.info("=" * 60)
 
     # GOOGLE_API_KEY 確認
@@ -257,6 +259,12 @@ def main() -> None:
         type=int,
         default=None,
         help="生成する企画書の枚数（デフォルト: config.yaml の設定値）",
+    )
+    parser.add_argument(
+        "--language",
+        choices=["ja", "en"],
+        default=None,
+        help="企画書画像の言語 (ja: 日本語 / en: 英語)（デフォルト: config.yaml の設定値）",
     )
     parser.add_argument(
         "--config",

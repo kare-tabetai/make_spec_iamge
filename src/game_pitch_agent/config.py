@@ -2,7 +2,7 @@
 
 import os
 from pathlib import Path
-from typing import Literal
+from typing import Literal, Optional
 
 import yaml
 from pydantic import BaseModel
@@ -20,6 +20,7 @@ class GenerationConfig(BaseModel):
     min_ideas_multiplier: int = 2
     image_width: int = 1024
     image_height: int = 512
+    language: Literal["ja", "en"] = "ja"
 
 
 class OutputConfig(BaseModel):
@@ -45,7 +46,11 @@ class AppConfig(BaseModel):
         return self.models.image_generation_test
 
 
-def load_config(config_path: str | None = None, mode_override: str | None = None) -> AppConfig:
+def load_config(
+    config_path: str | None = None,
+    mode_override: str | None = None,
+    language_override: str | None = None,
+) -> AppConfig:
     """
     config.yaml を読み込んで AppConfig を返す。
 
@@ -88,5 +93,10 @@ def load_config(config_path: str | None = None, mode_override: str | None = None
 
     if mode_override:
         config = config.model_copy(update={"mode": mode_override})
+
+    if language_override:
+        config = config.model_copy(
+            update={"generation": config.generation.model_copy(update={"language": language_override})}
+        )
 
     return config
