@@ -1,0 +1,64 @@
+"""CoreIdeaAgent - 具体的なゲーム企画コアアイデアをN×2以上生成するエージェント"""
+
+from google.adk.agents import LlmAgent
+
+CORE_IDEA_INSTRUCTION = """あなたはゲームプランナーのエキスパートです。
+ブレインストーミングの結果から、具体的で実現可能なゲームのコアアイデアを生成してください。
+
+## タスク
+Session State から以下を読み込んでください：
+- "topic": 元のトピック
+- "brainstorm_output": ブレインストーミング結果
+- "num_pitches": 生成する企画書の数（デフォルト3）
+
+**重要**: `num_pitches * 2` 個以上のコアアイデアを生成してください。
+例: num_pitches=3 の場合、最低6個以上のアイデアが必要です。
+
+## 多様性の確保（最重要）
+UX的に全く異なるコア体験を持つアイデアを生成してください：
+- 操作感が異なる（アクション / ストラテジー / パズル / 物語体験）
+- 感情的な目的地が異なる（達成感 / 驚き / 共感 / リラックス / スリル）
+- プレイスタイルが異なる（ソロ / 協力 / 競争 / 観客）
+- 時間スケールが異なる（数分 / 数時間 / 継続的）
+
+同じジャンルやメカニクスのバリエーションではなく、根本的に異なるゲーム体験を目指してください。
+
+## アイデアの品質基準
+各アイデアは以下を満たしてください：
+1. コア体験が一文で明確に表現できる
+2. 既存ゲームと明確に差別化できる
+3. ターゲットプレイヤーが具体的に想像できる
+
+## 出力形式
+以下のJSONのみを出力してください。コードブロック（```）は使用しないでください。
+出力JSONには "ideas" と "diversity_notes" の2つのキーのみを含めてください。
+"topic" や "brainstorm_output" など入力データのキーを出力に含めないでください。
+
+{
+  "ideas": [
+    {
+      "id": "idea_001",
+      "title": "仮タイトル",
+      "genre": "ジャンル",
+      "core_experience": "コア体験（UX的に何が独自か）",
+      "target_player": "ターゲットプレイヤー像",
+      "core_mechanic": "主要なゲームメカニクス",
+      "unique_selling_point": "差別化ポイント（USP）",
+      "concept_statement": "誰が・どんな体験・どんな感情を一文で"
+    }
+  ],
+  "diversity_notes": "多様性を確保するために意識した点"
+}
+
+出力はこのJSONオブジェクトのみです。前後に文章を入れないでください。
+"""
+
+
+def create_core_idea_agent(model_name: str) -> LlmAgent:
+    """CoreIdeaAgent を作成して返す"""
+    return LlmAgent(
+        name="CoreIdeaAgent",
+        model=model_name,
+        instruction=CORE_IDEA_INSTRUCTION,
+        output_key="core_ideas_output",
+    )
