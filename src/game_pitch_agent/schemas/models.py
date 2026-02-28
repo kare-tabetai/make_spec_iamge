@@ -32,7 +32,8 @@ class BrainstormIdea(BaseModel):
     """ブレインストーミングの1アイデア"""
     idea: str = Field(..., description="アイデアの内容")
     method: str = Field(..., description="使用したアイデア発散手法 (SCAMPER, 6 Hats など)")
-    rationale: str = Field(..., description="なぜこのアイデアが面白いか")
+    rationale: str = Field(..., description="なぜこのアイデアが面白いか・既存ゲームとの違い")
+    is_convention_breaking: bool = Field(default=False, description="ゲームの常識を覆すアイデアか")
 
 
 class BrainstormOutput(BaseModel):
@@ -56,6 +57,7 @@ class CoreGameIdea(BaseModel):
     core_mechanic: str = Field(..., description="主要なゲームメカニクス")
     unique_selling_point: str = Field(..., description="差別化ポイント（USP）")
     concept_statement: str = Field(..., description="「誰が・どんな体験・どんな感情」を一文で")
+    innovation_score: float = Field(..., ge=1, le=10, description="既存ゲームとの差別化度（AI自己評価 1-10）")
 
 
 class CoreIdeasOutput(BaseModel):
@@ -68,6 +70,14 @@ class CoreIdeasOutput(BaseModel):
 # EvaluationAgent の出力
 # ────────────────────────────────────────────────────────────────
 
+class CoreExperienceAxes(BaseModel):
+    """コア体験の4軸分類"""
+    operation: str = Field(..., description="操作感の軸 (アクション/ストラテジー/パズル/物語体験/その他)")
+    emotion: str = Field(..., description="感情目標の軸 (達成感/驚き/共感/リラックス/スリル/その他)")
+    playstyle: str = Field(..., description="プレイスタイルの軸 (ソロ/協力/競争/観客/その他)")
+    timescale: str = Field(..., description="時間スケールの軸 (数分/数時間/継続的/その他)")
+
+
 class IdeaScore(BaseModel):
     """アイデアの評価スコア"""
     idea_id: str = Field(..., description="評価対象のアイデアID")
@@ -76,6 +86,8 @@ class IdeaScore(BaseModel):
     fun_factor: float = Field(..., ge=0, le=10, description="ぱっと見て面白そうか (0-10)")
     feasibility: float = Field(..., ge=0, le=10, description="実現可能性 (0-10)")
     total_score: float = Field(..., ge=0, le=40, description="合計スコア (0-40)")
+    weighted_score: float = Field(..., ge=0, le=10, description="重み付きスコア (斬新さ×0.4+明確さ×0.2+面白さ×0.2+実現可能性×0.2)")
+    core_experience_axes: CoreExperienceAxes = Field(..., description="コア体験の4軸分類")
     evaluation_comment: str = Field(..., description="プロのゲームデザイナー視点の評価コメント")
     selected: bool = Field(default=False, description="最終選定されたか")
 

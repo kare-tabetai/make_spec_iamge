@@ -181,5 +181,6 @@ game-pitch-agent/
 
 | バージョン | 日付 | 内容 |
 |-----------|------|------|
+| 0.1.2 | 2026-02-28 | 品質改善: EvaluationAgent の多様性選定ロジック改善（3ステップ選定・重み付きスコア導入）、ImagePromptAgent のレイアウト多様化、BrainstormAgent/CoreIdeaAgent の革新性強化 ([Steering](Docs/Steering/fix-quality-issues-20260228.md)) |
 | 0.1.1 | 2026-02-28 | 企画書画像の言語設定機能追加（`--language` オプション、`config.yaml` 対応、デフォルト日本語） ([Steering](Docs/Steering/add-language-option-20260228.md)) |
 | 0.1.0 | 2026-02-27 | 初回実装 ([Steering](Docs/Steering/progress_20260227.md)) |
