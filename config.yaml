@@ -1,0 +1,18 @@
+mode: test # test | prod
+
+models:
+  inference:
+    prod: gemini-3.1-pro-preview
+    test: gemini-2.5-flash-lite
+  image_generation:
+    prod: gemini-3.1-flash-image-preview
+    test: gemini-3.1-flash-image-preview
+
+generation:
+  num_pitches: 3
+  min_ideas_multiplier: 5 # N*2 以上のコアアイデアを生成
+  image_width: 1024
+  image_height: 512
+
+output:
+  directory: output
