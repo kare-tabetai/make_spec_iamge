@@ -1,6 +1,7 @@
 """CoreIdeaAgent - 具体的なゲーム企画コアアイデアをN×2以上生成するエージェント"""
 
 from google.adk.agents import LlmAgent
+from google.genai import types as genai_types
 
 CORE_IDEA_INSTRUCTION = """あなたはゲームプランナーのエキスパートです。
 ブレインストーミングの結果から、具体的で実現可能なゲームのコアアイデアを生成してください。
@@ -73,4 +74,5 @@ def create_core_idea_agent(model_name: str) -> LlmAgent:
         model=model_name,
         instruction=CORE_IDEA_INSTRUCTION,
         output_key="core_ideas_output",
+        generate_content_config=genai_types.GenerateContentConfig(temperature=1.5),
     )

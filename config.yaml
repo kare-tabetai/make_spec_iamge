@@ -10,6 +10,7 @@ models:
 
 generation:
   num_pitches: 3
+  num_pitches_test: 2
   min_ideas_multiplier: 5 # N*2 以上のコアアイデアを生成
   image_width: 1024
   image_height: 512

@@ -15,7 +15,7 @@ from google.genai import types as genai_types
 from .agents import (
     create_google_research_agent,
     create_ddg_research_agent,
-    create_brainstorm_agent,
+    create_brainstorm_pipeline,
     create_core_idea_agent,
     create_evaluation_agent,
     create_expansion_agent,
@@ -136,7 +136,7 @@ async def run_pipeline(
     agents = [
         create_google_research_agent(model),
         create_ddg_research_agent(model),
-        create_brainstorm_agent(model),
+        create_brainstorm_pipeline(model),
         create_core_idea_agent(model),
         create_evaluation_agent(model),
         create_expansion_agent(model),
@@ -202,11 +202,16 @@ async def run_pipeline(
     agent_logs = [
         (1, "google_research", "google_research_output"),
         (2, "ddg_research", "research_output"),
-        (3, "brainstorm", "brainstorm_output"),
-        (4, "core_idea", "core_ideas_output"),
-        (5, "evaluation", "evaluation_output"),
-        (6, "expansion", "expanded_ideas_output"),
-        (7, "image_prompt", "image_prompts_output"),
+        (3, "brainstorm_scamper", "scamper_output"),
+        (4, "brainstorm_sixhats", "sixhats_output"),
+        (5, "brainstorm_reverse", "reverse_output"),
+        (6, "brainstorm_mandalart", "mandalart_output"),
+        (7, "brainstorm_shiritori", "shiritori_output"),
+        (8, "brainstorm", "brainstorm_output"),
+        (9, "core_idea", "core_ideas_output"),
+        (10, "evaluation", "evaluation_output"),
+        (11, "expansion", "expanded_ideas_output"),
+        (12, "image_prompt", "image_prompts_output"),
     ]
 
     results = {}

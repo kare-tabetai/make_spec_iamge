@@ -17,6 +17,7 @@ class ModelsConfig(BaseModel):
 
 class GenerationConfig(BaseModel):
     num_pitches: int = 3
+    num_pitches_test: int = 2
     min_ideas_multiplier: int = 2
     image_width: int = 1024
     image_height: int = 512
@@ -93,6 +94,14 @@ def load_config(
 
     if mode_override:
         config = config.model_copy(update={"mode": mode_override})
+
+    # テストモード時はnum_pitches_testの値をnum_pitchesに適用
+    if config.mode == "test":
+        config = config.model_copy(
+            update={"generation": config.generation.model_copy(
+                update={"num_pitches": config.generation.num_pitches_test}
+            )}
+        )
 
     if language_override:
         config = config.model_copy(

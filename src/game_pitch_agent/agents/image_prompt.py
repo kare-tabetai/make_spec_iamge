@@ -2,6 +2,8 @@
 
 from google.adk.agents import LlmAgent
 
+from ..schemas.models import ImagePromptsOutput
+
 _COMMON_HEADER = """あなたはゲームのビジュアルデザイナーであり、AIアート生成の専門家です。
 展開された企画書の内容を、魅力的なペラ1企画書画像に変換するプロンプトを作成してください。
 
@@ -66,22 +68,6 @@ IMAGE_PROMPT_INSTRUCTION_JA = _COMMON_HEADER + """
 5. **テキストは最小限**: 画像内テキストはタイトル・キャッチコピー・キーワードのみ。「テキスト: '...' 」形式で日本語のまま明記。長文や詳細説明はNG
 6. **品質指定**: 高品質, ゲームデザインドキュメントスタイル, プロフェッショナル, 見やすいレイアウト
 
-## 出力形式
-```json
-{
-  "image_prompts": [
-    {
-      "idea_id": "idea_001",
-      "title": "ゲームタイトル",
-      "prompt_en": "日本語の詳細な画像生成プロンプト（500字以内）",
-      "layout_description": "レイアウトの説明（日本語）",
-      "art_style_notes": "アートスタイルの補足（日本語）"
-    }
-  ]
-}
-```
-
-Session State の "image_prompts_output" キーに保存されるよう出力してください。
 """
 
 IMAGE_PROMPT_INSTRUCTION_EN = _COMMON_HEADER + """
@@ -94,22 +80,6 @@ IMAGE_PROMPT_INSTRUCTION_EN = _COMMON_HEADER + """
 5. **テキストは最小限**: Keep text in the image to a minimum — title, tagline, and keywords only. Use "text: '...' " format. No long sentences
 6. **品質指定**: high quality, game design document style, professional, clean layout
 
-## 出力形式
-```json
-{
-  "image_prompts": [
-    {
-      "idea_id": "idea_001",
-      "title": "ゲームタイトル",
-      "prompt_en": "英語の詳細な画像生成プロンプト（500字以内）",
-      "layout_description": "レイアウトの説明（日本語）",
-      "art_style_notes": "アートスタイルの補足（日本語）"
-    }
-  ]
-}
-```
-
-Session State の "image_prompts_output" キーに保存されるよう出力してください。
 """
 
 
@@ -120,5 +90,6 @@ def create_image_prompt_agent(model_name: str, language: str = "ja") -> LlmAgent
         name="ImagePromptAgent",
         model=model_name,
         instruction=instruction,
+        output_schema=ImagePromptsOutput,
         output_key="image_prompts_output",
     )

@@ -4,31 +4,37 @@
 
 ## 概要
 
-**Google ADK**（Agent Development Kit）の `SequentialAgent` を使い、7つの専門エージェントを直列に接続したパイプラインで動作します。各エージェントは前段の結果を Session State 経由で受け取り、処理結果を次のエージェントへ渡します。
+**Google ADK**（Agent Development Kit）の `SequentialAgent` を使い、専門エージェントを直列に接続したパイプラインで動作します。各エージェントは前段の結果を Session State 経由で受け取り、処理結果を次のエージェントへ渡します。
 
 ```
 トピック入力
     │
     ▼
-[1] GoogleResearchAgent   ← Google検索でトピック調査
+[1] GoogleResearchAgent      ← Google検索でトピック調査
     │
     ▼
-[2] DuckDuckGoResearchAgent ← DDG検索で補完・インディー/海外事例
+[2] DuckDuckGoResearchAgent  ← DDG検索で補完・インディー/海外事例
     │
     ▼
-[3] BrainstormAgent       ← SCAMPER・6 Hats等でアイデア発散
+[3-8] BrainstormPipeline     ← 5手法×サブエージェント + 統合
+    ├── [3] ScamperAgent       ← SCAMPER 7視点
+    ├── [4] SixHatsAgent       ← 6つの思考帽子
+    ├── [5] ReverseAgent       ← 逆転思考
+    ├── [6] MandalartAgent     ← マンダラート（曼荼羅チャート）
+    ├── [7] ShiritoriAgent     ← アイデアしりとり
+    └── [8] BrainstormMergeAgent ← 5手法の統合
     │
     ▼
-[4] CoreIdeaAgent         ← コアアイデアの抽出・具体化
+[9] CoreIdeaAgent            ← コアアイデアの抽出・具体化
     │
     ▼
-[5] EvaluationAgent       ← 斬新さ/明確さ/面白さ/実現可能性でスコアリング・選定
+[10] EvaluationAgent         ← 斬新さ/明確さ/面白さ/実現可能性でスコアリング・選定
     │
     ▼
-[6] ExpansionAgent        ← 選定アイデアをペラ1企画書に展開
+[11] ExpansionAgent          ← 選定アイデアをペラ1企画書に展開
     │
     ▼
-[7] ImagePromptAgent      ← 企画書ビジュアルの画像生成プロンプト作成
+[12] ImagePromptAgent        ← 企画書ビジュアルの画像生成プロンプト作成
     │
     ▼
 出力: Markdown / JSON / PNG画像
@@ -40,19 +46,27 @@
 
 ```
 output/
-└── 20260228_120000_宇宙を舞台にした孤独なロボット/
+└── 20260301_120000_お題___不自由__/
+    ├── request_info.json   # リクエスト情報ログ
     ├── logs/
     │   ├── session.log
     │   ├── 01_google_research.log
     │   ├── 02_ddg_research.log
-    │   ├── ...
-    │   └── 07_image_prompt.log
+    │   ├── 03_brainstorm_scamper.log
+    │   ├── 04_brainstorm_sixhats.log
+    │   ├── 05_brainstorm_reverse.log
+    │   ├── 06_brainstorm_mandalart.log
+    │   ├── 07_brainstorm_shiritori.log
+    │   ├── 08_brainstorm.log
+    │   ├── 09_core_idea.log
+    │   ├── 10_evaluation.log
+    │   ├── 11_expansion.log
+    │   └── 12_image_prompt.log
     ├── pitch_1/
     │   ├── pitch.md        # Markdown形式の企画書
     │   ├── pitch.json      # 構造化データ
     │   └── pitch_image.png # 企画書ビジュアル画像
-    ├── pitch_2/
-    └── pitch_3/
+    └── pitch_2/
 ```
 
 ## セットアップ
@@ -89,16 +103,16 @@ GOOGLE_API_KEY=your_api_key_here
 
 ```bash
 # テストモード（デフォルト・低コスト）で実行
-uv run game-pitch --topic "宇宙を舞台にした孤独なロボットの旅"
+uv run game-pitch --topic "お題:「不自由」"
 
 # 本番モード（高精度モデル）で実行
-uv run game-pitch --topic "宇宙を舞台にした孤独なロボットの旅" --mode prod
+uv run game-pitch --topic "お題:「不自由」" --mode prod
 
 # 生成する企画書の枚数を指定（デフォルト: 3）
-uv run game-pitch --topic "宇宙を舞台にした孤独なロボットの旅" --num-pitches 5
+uv run game-pitch --topic "お題:「不自由」" --num-pitches 5
 
 # 画像の言語を指定（ja: 日本語 / en: 英語）
-uv run game-pitch --topic "宇宙を舞台にした孤独なロボットの旅" --language en
+uv run game-pitch --topic "お題:「不自由」" --language en
 
 # 設定ファイルを指定
 uv run game-pitch --topic "..." --config path/to/config.yaml
@@ -110,7 +124,7 @@ uv run game-pitch --topic "..." --config path/to/config.yaml
 |-----------|------|-----------|
 | `--topic` | ゲームアイデアのトピック（必須） | - |
 | `--mode` | 実行モード `test` / `prod` | `config.yaml` の設定値 |
-| `--num-pitches` | 生成する企画書の枚数 | `config.yaml` の設定値（3） |
+| `--num-pitches` | 生成する企画書の枚数 | test: 2 / prod: 3（`config.yaml`） |
 | `--language` | 企画書画像の言語 `ja` / `en` | `config.yaml` の設定値（`ja`） |
 | `--config` | 設定ファイルのパス | プロジェクトルートの `config.yaml` |
 
@@ -181,6 +195,7 @@ game-pitch-agent/
 
 | バージョン | 日付 | 内容 |
 |-----------|------|------|
+| 0.2.0 | 2026-03-01 | アイデア発散パイプライン刷新: BrainstormAgent を5手法別サブエージェント（SCAMPER/6Hats/逆転思考/マンダラート/しりとり）に分割、温度1.5設定、ターゲット情報削除、request_info.json出力追加 ([Steering](Docs/Steering/improvement-202603010219.md)) |
 | 0.1.2 | 2026-02-28 | 品質改善: EvaluationAgent の多様性選定ロジック改善（3ステップ選定・重み付きスコア導入）、ImagePromptAgent のレイアウト多様化、BrainstormAgent/CoreIdeaAgent の革新性強化 ([Steering](Docs/Steering/fix-quality-issues-20260228.md)) |
 | 0.1.1 | 2026-02-28 | 企画書画像の言語設定機能追加（`--language` オプション、`config.yaml` 対応、デフォルト日本語） ([Steering](Docs/Steering/add-language-option-20260228.md)) |
 | 0.1.0 | 2026-02-27 | 初回実装 ([Steering](Docs/Steering/progress_20260227.md)) |

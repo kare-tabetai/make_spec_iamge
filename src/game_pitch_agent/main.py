@@ -6,6 +6,7 @@ import json
 import logging
 import os
 import sys
+from datetime import datetime
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -32,9 +33,6 @@ def build_markdown(pitch: dict, image_path: str | None = None) -> str:
         "",
         "## ゲーム概要",
         pitch.get("overview", ""),
-        "",
-        "## ターゲット",
-        pitch.get("target", ""),
         "",
         f"**ジャンル**: {pitch.get('genre', '')}",
         f"**プラットフォーム**: {pitch.get('platform', '')}",
@@ -96,7 +94,22 @@ def save_pitch_files(
     # 画像生成
     image_path = None
     if image_prompt:
-        prompt_text = image_prompt.get("prompt_en", "")
+        prompt_text = image_prompt.get("prompt", "")
+        layout_desc = image_prompt.get("layout_description", "")
+        # layout_description にはテキスト仕様（日本語含む）が含まれるため結合する
+        if layout_desc:
+            prompt_text = f"{prompt_text} Layout: {layout_desc}"
+        # --language ja の場合はタイトル・キャッチコピーを明示的に追記
+        if config.generation.language == "ja":
+            ja_title = pitch.get("title", "")
+            ja_catchcopy = pitch.get("catchcopy", "")
+            text_parts = []
+            if ja_title:
+                text_parts.append(f"title: '{ja_title}'")
+            if ja_catchcopy:
+                text_parts.append(f"tagline: '{ja_catchcopy}'")
+            if text_parts:
+                prompt_text += " Japanese text to render in the image: " + ", ".join(text_parts) + ". Render Japanese characters accurately."
         if prompt_text:
             image_file = pitch_dir / "pitch_image.png"
             try:
@@ -162,6 +175,21 @@ async def async_main(args: argparse.Namespace) -> int:
     logger.info(f"  生成枚数: {config.generation.num_pitches}")
     logger.info(f"  画像言語: {config.generation.language}")
     logger.info("=" * 60)
+
+    # リクエスト情報をログ出力
+    request_info = {
+        "timestamp": datetime.now().isoformat(),
+        "topic": topic,
+        "mode": config.mode,
+        "inference_model": config.inference_model,
+        "image_model": config.image_model,
+        "num_pitches": config.generation.num_pitches,
+        "language": config.generation.language,
+    }
+    request_info_path = output_dir / "request_info.json"
+    with open(request_info_path, "w", encoding="utf-8") as f:
+        json.dump(request_info, f, ensure_ascii=False, indent=2)
+    logger.info(f"リクエスト情報保存: {request_info_path}")
 
     # GOOGLE_API_KEY 確認
     if not os.environ.get("GOOGLE_API_KEY"):
@@ -234,7 +262,7 @@ def main() -> None:
         epilog="""
 使用例:
   # テストモードで実行（デフォルト）
-  uv run game-pitch --topic "宇宙を舞台にした孤独なロボットの旅"
+  uv run game-pitch --topic "お題:「不自由」"
 
   # 本番モードで実行
   uv run game-pitch --topic "..." --mode prod
@@ -246,7 +274,7 @@ def main() -> None:
     parser.add_argument(
         "--topic",
         required=True,
-        help="ゲームアイデアのトピック（例: '宇宙を舞台にした孤独なロボットの旅'）",
+        help="ゲームアイデアのトピック（例: 'お題:「不自由」'）",
     )
     parser.add_argument(
         "--mode",

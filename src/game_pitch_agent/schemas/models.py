@@ -117,7 +117,6 @@ class ExpandedPitch(BaseModel):
     catchcopy: str = Field(..., description="キャッチコピー")
     concept: str = Field(..., description="ゲームコンセプト（目的地・感情）")
     overview: str = Field(..., description="ゲーム概要")
-    target: str = Field(..., description="ターゲットプレイヤー（詳細なペルソナ）")
     genre: str = Field(..., description="ジャンル")
     platform: str = Field(..., description="想定プラットフォーム")
     core_mechanic: str = Field(..., description="コアメカニクス（遊びの仕組み）")
@@ -140,7 +139,7 @@ class ImagePrompt(BaseModel):
     """画像生成プロンプト"""
     idea_id: str = Field(..., description="対応するコアアイデアID")
     title: str = Field(..., description="対応するゲームタイトル")
-    prompt_en: str = Field(..., description="英語の画像生成プロンプト（詳細）")
+    prompt: str = Field(..., description="画像生成プロンプト（指示言語に従って記述）")
     layout_description: str = Field(..., description="レイアウトの説明")
     art_style_notes: str = Field(..., description="アートスタイルの補足")
 
