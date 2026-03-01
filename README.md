@@ -114,6 +114,9 @@ uv run game-pitch --topic "お題:「不自由」" --num-pitches 5
 # 画像の言語を指定（ja: 日本語 / en: 英語）
 uv run game-pitch --topic "お題:「不自由」" --language en
 
+# 画像生成をスキップしてMarkdownのみ出力
+uv run game-pitch --topic "お題:「不自由」" --no-image
+
 # 設定ファイルを指定
 uv run game-pitch --topic "..." --config path/to/config.yaml
 ```
@@ -126,6 +129,7 @@ uv run game-pitch --topic "..." --config path/to/config.yaml
 | `--mode` | 実行モード `test` / `prod` | `config.yaml` の設定値 |
 | `--num-pitches` | 生成する企画書の枚数 | test: 2 / prod: 3（`config.yaml`） |
 | `--language` | 企画書画像の言語 `ja` / `en` | `config.yaml` の設定値（`ja`） |
+| `--no-image` | 画像生成をスキップし、Markdownのみ出力 | `false` |
 | `--config` | 設定ファイルのパス | プロジェクトルートの `config.yaml` |
 
 ## 設定ファイル
@@ -195,6 +199,7 @@ game-pitch-agent/
 
 | バージョン | 日付 | 内容 |
 |-----------|------|------|
+| 0.2.1 | 2026-03-01 | `--no-image` オプション追加: 画像生成をスキップしてMarkdownのみ出力可能に ([Steering](Docs/Steering/add-no-image-option-20260301.md)) |
 | 0.2.0 | 2026-03-01 | アイデア発散パイプライン刷新: BrainstormAgent を5手法別サブエージェント（SCAMPER/6Hats/逆転思考/マンダラート/しりとり）に分割、温度1.5設定、ターゲット情報削除、request_info.json出力追加 ([Steering](Docs/Steering/improvement-202603010219.md)) |
 | 0.1.2 | 2026-02-28 | 品質改善: EvaluationAgent の多様性選定ロジック改善（3ステップ選定・重み付きスコア導入）、ImagePromptAgent のレイアウト多様化、BrainstormAgent/CoreIdeaAgent の革新性強化 ([Steering](Docs/Steering/fix-quality-issues-20260228.md)) |
 | 0.1.1 | 2026-02-28 | 企画書画像の言語設定機能追加（`--language` オプション、`config.yaml` 対応、デフォルト日本語） ([Steering](Docs/Steering/add-language-option-20260228.md)) |

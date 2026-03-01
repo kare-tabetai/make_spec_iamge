@@ -72,6 +72,7 @@ def save_pitch_files(
     image_prompt: dict | None,
     config,
     pitch_num: int,
+    skip_image: bool = False,
 ) -> dict:
     """企画書ファイル（markdown, json, png）を保存する"""
     idea_id = pitch.get("idea_id", f"idea_{pitch_num:03d}")
@@ -94,7 +95,9 @@ def save_pitch_files(
 
     # 画像生成
     image_path = None
-    if image_prompt:
+    if skip_image:
+        logger.info("画像生成スキップ（--no-image 指定）")
+    elif image_prompt:
         prompt_text = image_prompt.get("prompt", "")
         layout_desc = image_prompt.get("layout_description", "")
         # layout_description にはテキスト仕様（日本語含む）が含まれるため結合する
@@ -133,7 +136,7 @@ def save_pitch_files(
 
     # Markdown保存
     md_path = pitch_dir / "pitch.md"
-    markdown_content = build_markdown(pitch, image_path=str(image_file.name) if image_path else None)
+    markdown_content = build_markdown(pitch, image_path=Path(image_path).name if image_path else None)
     with open(md_path, "w", encoding="utf-8") as f:
         f.write(markdown_content)
     logger.info(f"Markdown保存: {md_path}")
@@ -175,6 +178,7 @@ async def async_main(args: argparse.Namespace) -> int:
     logger.info(f"  画像生成モデル: {config.image_model}")
     logger.info(f"  生成枚数: {config.generation.num_pitches}")
     logger.info(f"  画像言語: {config.generation.language}")
+    logger.info(f"  画像生成: {'スキップ' if args.no_image else '有効'}")
     logger.info("=" * 60)
 
     # リクエスト情報をログ出力
@@ -186,6 +190,7 @@ async def async_main(args: argparse.Namespace) -> int:
         "image_model": config.image_model,
         "num_pitches": config.generation.num_pitches,
         "language": config.generation.language,
+        "skip_image": args.no_image,
     }
     request_info_path = output_dir / "request_info.json"
     with open(request_info_path, "w", encoding="utf-8") as f:
@@ -199,7 +204,7 @@ async def async_main(args: argparse.Namespace) -> int:
 
     # パイプライン実行
     try:
-        results = await run_pipeline(topic=topic, config=config, output_dir=output_dir)
+        results = await run_pipeline(topic=topic, config=config, output_dir=output_dir, skip_image=args.no_image)
     except Exception as e:
         logger.error(f"パイプライン実行エラー: {e}", exc_info=True)
         return 1
@@ -233,6 +238,7 @@ async def async_main(args: argparse.Namespace) -> int:
             image_prompt=image_prompt,
             config=config,
             pitch_num=i,
+            skip_image=args.no_image,
         )
         saved_files.append(files)
 
@@ -241,7 +247,12 @@ async def async_main(args: argparse.Namespace) -> int:
     logger.info("完了！")
     logger.info(f"出力ディレクトリ: {output_dir}")
     for files in saved_files:
-        status = "✓" if files.get("image_path") else "△（画像なし）"
+        if args.no_image:
+            status = "○（画像スキップ）"
+        elif files.get("image_path"):
+            status = "✓"
+        else:
+            status = "△（画像なし）"
         logger.info(f"  {status} {files['title']}")
         logger.info(f"    - JSON: {files['json_path']}")
         logger.info(f"    - Markdown: {files['markdown_path']}")
@@ -270,6 +281,9 @@ def main() -> None:
 
   # 生成枚数を指定
   uv run game-pitch --topic "..." --num-pitches 5
+
+  # 画像生成をスキップしてMarkdownのみ出力
+  uv run game-pitch --topic "..." --no-image
         """,
     )
     parser.add_argument(
@@ -294,6 +308,11 @@ def main() -> None:
         choices=["ja", "en"],
         default=None,
         help="企画書画像の言語 (ja: 日本語 / en: 英語)（デフォルト: config.yaml の設定値）",
+    )
+    parser.add_argument(
+        "--no-image",
+        action="store_true",
+        help="画像生成をスキップし、Markdownのみ出力する",
     )
     parser.add_argument(
         "--config",

@@ -114,6 +114,7 @@ async def run_pipeline(
     topic: str,
     config: AppConfig,
     output_dir: Path,
+    skip_image: bool = False,
 ) -> dict[str, Any]:
     """
     パイプラインを実行してすべての結果を返す。
@@ -122,6 +123,7 @@ async def run_pipeline(
         topic: ゲームアイデアのトピック
         config: アプリ設定
         output_dir: 出力ディレクトリ
+        skip_image: Trueの場合、画像プロンプト生成エージェントをスキップ
 
     Returns:
         パイプラインの実行結果
@@ -141,8 +143,11 @@ async def run_pipeline(
         create_core_idea_agent(model),
         create_evaluation_agent(model),
         create_expansion_agent(model),
-        create_image_prompt_agent(model, language=config.generation.language),
     ]
+    if not skip_image:
+        agents.append(create_image_prompt_agent(model, language=config.generation.language))
+    else:
+        logger.info("画像生成スキップ: ImagePromptAgent を除外します")
 
     # SequentialAgent（パイプライン）構築
     pipeline = SequentialAgent(
@@ -212,8 +217,9 @@ async def run_pipeline(
         (9, "core_idea", "core_ideas_output"),
         (10, "evaluation", "evaluation_output"),
         (11, "expansion", "expanded_ideas_output"),
-        (12, "image_prompt", "image_prompts_output"),
     ]
+    if not skip_image:
+        agent_logs.append((12, "image_prompt", "image_prompts_output"))
 
     results = {}
     for step_num, agent_name, state_key in agent_logs:
