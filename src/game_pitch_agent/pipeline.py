@@ -5,6 +5,7 @@ import logging
 import os
 from datetime import datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 from typing import Any
 
 from google.adk.agents import SequentialAgent
@@ -28,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 def setup_output_directory(config: AppConfig, topic: str) -> Path:
     """実行ごとの出力ディレクトリを作成する"""
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    timestamp = datetime.now(ZoneInfo("Asia/Tokyo")).strftime("%Y%m%d_%H%M%S")
     # トピックをファイル名に使えるように整形
     safe_topic = "".join(c if c.isalnum() or c in "._- " else "_" for c in topic)
     safe_topic = safe_topic[:30].strip()
@@ -226,7 +227,7 @@ async def run_pipeline(
                 {
                     "agent": agent_name,
                     "state_key": state_key,
-                    "timestamp": datetime.now().isoformat(),
+                    "timestamp": datetime.now(ZoneInfo("Asia/Tokyo")).isoformat(),
                     "data": data,
                 },
             )
@@ -243,7 +244,7 @@ async def run_pipeline(
                     {
                         "agent": agent_name,
                         "state_key": state_key,
-                        "timestamp": datetime.now().isoformat(),
+                        "timestamp": datetime.now(ZoneInfo("Asia/Tokyo")).isoformat(),
                         "raw": str(raw_value)[:5000],
                         "error": "JSONデコード失敗",
                     },

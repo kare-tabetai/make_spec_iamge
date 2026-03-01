@@ -8,6 +8,7 @@ import os
 import sys
 from datetime import datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 from dotenv import load_dotenv
 
@@ -178,7 +179,7 @@ async def async_main(args: argparse.Namespace) -> int:
 
     # リクエスト情報をログ出力
     request_info = {
-        "timestamp": datetime.now().isoformat(),
+        "timestamp": datetime.now(ZoneInfo("Asia/Tokyo")).isoformat(),
         "topic": topic,
         "mode": config.mode,
         "inference_model": config.inference_model,
