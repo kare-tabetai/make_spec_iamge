@@ -264,3 +264,69 @@ async def run_pipeline(
     }
 
     return results
+
+
+async def run_image_prompt_for_pitch(pitch: dict, config: AppConfig) -> dict | None:
+    """単一の企画書に対してImagePromptAgentを実行し、image_promptを返す。
+
+    Args:
+        pitch: 企画書データ（expanded_ideas_output 内の1件分）
+        config: アプリ設定
+
+    Returns:
+        image_prompt dict または None
+    """
+    model = config.inference_model
+    agent = create_image_prompt_agent(model, language=config.generation.language)
+
+    pipeline = SequentialAgent(
+        name="ImagePromptOnlyPipeline",
+        sub_agents=[agent],
+    )
+
+    session_service = InMemorySessionService()
+    runner = Runner(
+        agent=pipeline,
+        app_name="game_pitch_agent",
+        session_service=session_service,
+    )
+
+    # ImagePromptAgent は expanded_ideas_output キーから企画書データを読む
+    initial_state = {
+        "expanded_ideas_output": {"pitches": [pitch]},
+    }
+
+    session = await session_service.create_session(
+        app_name="game_pitch_agent",
+        user_id="user",
+        state=initial_state,
+    )
+
+    message = genai_types.Content(
+        role="user",
+        parts=[genai_types.Part(text="画像プロンプトを生成してください")],
+    )
+
+    async for event in runner.run_async(
+        user_id="user",
+        session_id=session.id,
+        new_message=message,
+    ):
+        if event.is_final_response():
+            break
+
+    final_session = await session_service.get_session(
+        app_name="game_pitch_agent",
+        user_id="user",
+        session_id=session.id,
+    )
+    final_state = final_session.state if final_session else {}
+
+    image_prompts_output = extract_json_from_state(final_state, "image_prompts_output")
+    if image_prompts_output:
+        prompts = image_prompts_output.get("image_prompts", [])
+        if prompts:
+            return prompts[0]
+
+    logger.warning("ImagePromptAgent から結果を取得できませんでした")
+    return None
