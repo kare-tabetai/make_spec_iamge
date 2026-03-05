@@ -414,7 +414,7 @@ Session State（InMemorySessionService）
 |------|------|
 | ファイル | `src/game_pitch_agent/tools/image_gen.py` |
 | 用途 | Gemini画像生成モデルでペラ1企画書画像を生成・PNG保存する |
-| 使用箇所 | `main.py`（パイプライン実行後に呼び出し） |
+| 使用箇所 | `main.py`（パイプライン実行後に呼び出し、`--format image` 時） |
 
 **引数:**
 
@@ -439,6 +439,32 @@ Session State（InMemorySessionService）
 3. `generate_content()` で画像生成リクエスト（`response_modalities=["IMAGE", "TEXT"]`）
 4. レスポンスから `inline_data` を抽出
 5. base64デコード後、Pillowで指定サイズにリサイズしてPNG保存
+
+---
+
+### ツール④ render_pitch_pptx（パイプライン外ツール）
+
+| 項目 | 内容 |
+|------|------|
+| ファイル | `src/game_pitch_agent/tools/pptx_render.py` |
+| 用途 | python-pptxでペラ1企画書をPowerPoint形式（.pptx）で生成・保存する |
+| 使用箇所 | `main.py`（パイプライン実行後に呼び出し、`--format pptx` 時） |
+
+**引数:**
+
+| 引数名 | 型 | デフォルト | 説明 |
+|--------|-----|-----------|------|
+| `pitch` | `dict` | 必須 | ExpandedPitchフィールドの辞書 |
+| `output_path` | `str` | 必須 | 保存先パス（.pptx） |
+| `image_path` | `str \| None` | `None` | 埋め込み画像パス（あれば） |
+
+**戻り値:** 保存先パス文字列
+
+**特徴:**
+- 16:9 Blankスライドに6セクション（コンセプト、コアメカニクス、ゲーム概要、ゲームサイクル、アートスタイル+画像、USP+実現可能性）を2カラムで配置
+- フォント: Meiryo（日本語対応）
+- タイトルバー: 濃紺(#1B2A4A) + 白文字、ジャンル/プラットフォームバッジ
+- GOOGLE_API_KEY不要（ローカル生成のみ）
 
 ---
 
@@ -700,15 +726,18 @@ output/
     ├── pitch_1/
     │   ├── pitch.json                 # 企画書データ（JSON形式）
     │   ├── pitch.md                   # 企画書（Markdown形式）
-    │   └── pitch_image.png            # 企画書画像（1024×512px）
+    │   ├── pitch_image.png            # 企画書画像（--format image時、1024×512px）
+    │   └── pitch.pptx                 # PowerPoint企画書（--format pptx時）
     ├── pitch_2/
     │   ├── pitch.json
     │   ├── pitch.md
-    │   └── pitch_image.png
+    │   ├── pitch_image.png
+    │   └── pitch.pptx
     └── pitch_N/
         ├── pitch.json
         ├── pitch.md
-        └── pitch_image.png
+        ├── pitch_image.png
+        └── pitch.pptx
 ```
 
 ログファイルの構造（各エージェントのログ）:

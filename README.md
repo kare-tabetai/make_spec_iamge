@@ -65,7 +65,8 @@ output/
     ├── pitch_1/
     │   ├── pitch.md        # Markdown形式の企画書
     │   ├── pitch.json      # 構造化データ
-    │   └── pitch_image.png # 企画書ビジュアル画像
+    │   ├── pitch_image.png # 企画書ビジュアル画像（--format image時）
+    │   └── pitch.pptx      # PowerPoint企画書（--format pptx時）
     └── pitch_2/
 ```
 
@@ -113,28 +114,34 @@ uv run game-pitch generate --topic "お題:「不自由」"
 uv run game-pitch generate --topic "お題:「不自由」" --mode prod --num-pitches 5
 ```
 
-### `render` — 既存の企画書から画像生成
+### `render` — 既存の企画書から画像/PPTX生成
 
-`generate` で出力した企画書ディレクトリに対して、画像生成プロンプト作成 + 画像生成を実行します。
+`generate` で出力した企画書ディレクトリに対して、画像生成またはPPTX生成を実行します。
 
 ```bash
-# generate の出力ディレクトリを指定して画像生成
+# generate の出力ディレクトリを指定して画像生成（デフォルト）
 uv run game-pitch render --dir output/20260301_120000_xxx
+
+# PPTX形式で出力（GOOGLE_API_KEY不要）
+uv run game-pitch render --dir output/20260301_120000_xxx --format pptx
 
 # 言語を変更して再生成
 uv run game-pitch render --dir output/20260301_120000_xxx --language en
 
-# 既存画像を上書き再生成
+# 既存画像/PPTXを上書き再生成
 uv run game-pitch render --dir output/20260301_120000_xxx --force
 ```
 
 ### `full` — フルパイプライン実行
 
-テキスト生成と画像生成をまとめて一括実行します（従来の動作と同等）。
+テキスト生成と画像/PPTX生成をまとめて一括実行します（従来の動作と同等）。
 
 ```bash
 # フルパイプライン実行
 uv run game-pitch full --topic "お題:「不自由」"
+
+# PPTX形式で出力（画像生成AIを使わない）
+uv run game-pitch full --topic "お題:「不自由」" --format pptx
 
 # 本番モード・英語画像
 uv run game-pitch full --topic "お題:「不自由」" --mode prod --language en
@@ -159,9 +166,10 @@ uv run game-pitch full --topic "お題:「不自由」" --no-image
 | オプション | 説明 | デフォルト |
 |-----------|------|-----------|
 | `--dir` | 対象の出力ディレクトリ（必須） | - |
+| `--format` | 出力形式 `image` / `pptx` | `image` |
 | `--mode` | 実行モード `test` / `prod` | 元の `request_info.json` の値 |
 | `--language` | 画像の言語 `ja` / `en` | 元の `request_info.json` の値 |
-| `--force` | 既存画像を上書き再生成 | `false` |
+| `--force` | 既存画像/PPTXを上書き再生成 | `false` |
 | `--config` | 設定ファイルのパス | プロジェクトルートの `config.yaml` |
 
 #### `full` オプション
@@ -169,6 +177,7 @@ uv run game-pitch full --topic "お題:「不自由」" --no-image
 | オプション | 説明 | デフォルト |
 |-----------|------|-----------|
 | `--topic` | ゲームアイデアのトピック（必須） | - |
+| `--format` | 出力形式 `image` / `pptx` | `image` |
 | `--mode` | 実行モード `test` / `prod` | `config.yaml` の設定値 |
 | `--num-pitches` | 生成する企画書の枚数 | test: 2 / prod: 3（`config.yaml`） |
 | `--language` | 画像の言語 `ja` / `en` | `config.yaml` の設定値（`ja`） |
@@ -217,7 +226,8 @@ game-pitch-agent/
 │   │   └── models.py         # Pydantic スキーマ定義
 │   ├── tools/
 │   │   ├── web_search.py     # DuckDuckGo 検索ツール
-│   │   └── image_gen.py      # Gemini 画像生成ツール
+│   │   ├── image_gen.py      # Gemini 画像生成ツール
+│   │   └── pptx_render.py    # PPTX 企画書生成ツール
 │   ├── config.py             # 設定ローダー
 │   ├── pipeline.py           # SequentialAgent パイプライン
 │   └── main.py               # CLI エントリーポイント
@@ -236,12 +246,14 @@ game-pitch-agent/
 | `pydantic` | エージェント間通信用スキーマ定義 |
 | `pyyaml` | 設定ファイル読み込み |
 | `pillow` | 画像処理 |
+| `python-pptx` | PowerPoint（PPTX）生成 |
 | `python-dotenv` | `.env` ファイルの読み込み |
 
 ## 更新履歴
 
 | バージョン | 日付 | 内容 |
 |-----------|------|------|
+| 0.4.0 | 2026-03-05 | PPTX出力機能追加: `--format pptx` オプションでPowerPoint形式の企画書を出力可能に。画像生成AI不要で動作 ([Steering](Docs/Steering/add-pptx-render-20260305.md)) |
 | 0.3.0 | 2026-03-05 | サブコマンド化: `generate` / `render` / `full` の3コマンドに分離。テキスト生成のみ・画像のみ再生成が個別に実行可能に ([Steering](Docs/Steering/pipeline-subcommands-20260305.md)) |
 | 0.2.1 | 2026-03-01 | `--no-image` オプション追加: 画像生成をスキップしてMarkdownのみ出力可能に ([Steering](Docs/Steering/add-no-image-option-20260301.md)) |
 | 0.2.0 | 2026-03-01 | アイデア発散パイプライン刷新: BrainstormAgent を5手法別サブエージェント（SCAMPER/6Hats/逆転思考/マンダラート/しりとり）に分割、温度1.5設定、ターゲット情報削除、request_info.json出力追加 ([Steering](Docs/Steering/improvement-202603010219.md)) |
