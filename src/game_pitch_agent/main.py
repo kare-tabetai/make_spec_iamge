@@ -12,7 +12,7 @@ from zoneinfo import ZoneInfo
 
 from dotenv import load_dotenv
 
-from .config import load_config
+from .config import AppConfig, load_config
 from .pipeline import run_pipeline, run_image_prompt_for_pitch, setup_logging, setup_output_directory, extract_json_from_state
 from .tools.image_gen import generate_pitch_image
 
@@ -66,7 +66,7 @@ def build_markdown(pitch: dict, image_path: str | None = None) -> str:
     return "\n".join(lines)
 
 
-def render_pitch_image(pitch_dir: Path, pitch: dict, image_prompt: dict, config) -> str | None:
+def render_pitch_image(pitch_dir: Path, pitch: dict, image_prompt: dict, config: AppConfig) -> str | None:
     """企画書ディレクトリに対して画像生成 + Markdown再生成を行う
 
     Returns:
@@ -105,7 +105,7 @@ def render_pitch_image(pitch_dir: Path, pitch: dict, image_prompt: dict, config)
         )
         logger.info(f"画像保存完了: {image_file}")
     except Exception as e:
-        logger.error(f"画像生成失敗: {e}")
+        logger.error(f"画像生成失敗: {e}", exc_info=True)
         return None
 
     # Markdown再生成（画像参照付き）
@@ -122,7 +122,7 @@ def save_pitch_files(
     pitch_dir: Path,
     pitch: dict,
     image_prompt: dict | None,
-    config,
+    config: AppConfig,
     pitch_num: int,
     skip_image: bool = False,
 ) -> dict:
@@ -191,13 +191,12 @@ def _log_summary(saved_files: list[dict], output_dir: Path, skip_image: bool = F
     logger.info("=" * 60)
 
 
-def _load_config_for_render(args: argparse.Namespace, output_dir: Path):
+def _load_config_for_render(args: argparse.Namespace, output_dir: Path) -> AppConfig:
     """render用設定: request_info.jsonの値をデフォルトにし、CLI引数で上書き"""
     request_info_path = output_dir / "request_info.json"
 
     original_mode = None
     original_language = None
-    config_path = None
 
     if request_info_path.exists():
         with open(request_info_path, "r", encoding="utf-8") as f:
@@ -220,6 +219,10 @@ def _load_config_for_render(args: argparse.Namespace, output_dir: Path):
 
 async def async_generate(args: argparse.Namespace) -> int:
     """generate サブコマンド: テキストパイプライン（Steps 1-11）のみ実行"""
+    if not os.environ.get("GOOGLE_API_KEY"):
+        logger.error("GOOGLE_API_KEY 環境変数が設定されていません")
+        return 1
+
     config_path = getattr(args, "config", None)
     mode_override = getattr(args, "mode", None)
     config = load_config(config_path=config_path, mode_override=mode_override)
@@ -257,10 +260,6 @@ async def async_generate(args: argparse.Namespace) -> int:
         json.dump(request_info, f, ensure_ascii=False, indent=2)
     logger.info(f"リクエスト情報保存: {request_info_path}")
 
-    if not os.environ.get("GOOGLE_API_KEY"):
-        logger.error("GOOGLE_API_KEY 環境変数が設定されていません")
-        return 1
-
     # パイプライン実行（skip_image=True → Steps 1-11のみ）
     try:
         results = await run_pipeline(topic=topic, config=config, output_dir=output_dir, skip_image=True)
@@ -291,14 +290,18 @@ async def async_generate(args: argparse.Namespace) -> int:
         saved_files.append(files)
 
     _log_summary(saved_files, output_dir, skip_image=True)
-    print(f"\n出力ディレクトリ: {output_dir}")
-    print(f"画像生成するには: game-pitch render --dir {output_dir}")
+    logger.info(f"出力ディレクトリ: {output_dir}")
+    logger.info(f"画像生成するには: game-pitch render --dir {output_dir}")
 
     return 0
 
 
 async def async_render(args: argparse.Namespace) -> int:
     """render サブコマンド: 既存の企画書出力から画像生成"""
+    if not os.environ.get("GOOGLE_API_KEY"):
+        logger.error("GOOGLE_API_KEY 環境変数が設定されていません")
+        return 1
+
     output_dir = Path(args.dir)
     if not output_dir.exists():
         logger.error(f"出力ディレクトリが見つかりません: {output_dir}")
@@ -315,10 +318,6 @@ async def async_render(args: argparse.Namespace) -> int:
     logger.info(f"  画像言語: {config.generation.language}")
     logger.info(f"  強制再生成: {getattr(args, 'force', False)}")
     logger.info("=" * 60)
-
-    if not os.environ.get("GOOGLE_API_KEY"):
-        logger.error("GOOGLE_API_KEY 環境変数が設定されていません")
-        return 1
 
     # pitch_*/pitch.json を発見
     pitch_dirs = sorted(output_dir.glob("pitch_*"))
@@ -396,6 +395,10 @@ async def async_render(args: argparse.Namespace) -> int:
 
 async def async_full(args: argparse.Namespace) -> int:
     """full サブコマンド: テキスト生成＋画像生成をまとめて実行（従来の動作と同等）"""
+    if not os.environ.get("GOOGLE_API_KEY"):
+        logger.error("GOOGLE_API_KEY 環境変数が設定されていません")
+        return 1
+
     config_path = getattr(args, "config", None)
     mode_override = getattr(args, "mode", None)
     language_override = getattr(args, "language", None)
@@ -436,10 +439,6 @@ async def async_full(args: argparse.Namespace) -> int:
     with open(request_info_path, "w", encoding="utf-8") as f:
         json.dump(request_info, f, ensure_ascii=False, indent=2)
     logger.info(f"リクエスト情報保存: {request_info_path}")
-
-    if not os.environ.get("GOOGLE_API_KEY"):
-        logger.error("GOOGLE_API_KEY 環境変数が設定されていません")
-        return 1
 
     # パイプライン実行
     try:
