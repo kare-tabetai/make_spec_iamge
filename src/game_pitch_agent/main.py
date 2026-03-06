@@ -44,8 +44,10 @@ def build_markdown(pitch: dict, image_path: str | None = None, pptx_path: str | 
         pitch.get("core_mechanic", ""),
         "",
         "## ゲームサイクル",
+        f"- **きっかけ**: {game_cycle.get('trigger', '')}",
         f"- **メインアクション**: {game_cycle.get('main_action', '')}",
         f"- **短期的な報酬**: {game_cycle.get('short_term_reward', '')}",
+        f"- **エスカレーション**: {game_cycle.get('escalation', '')}",
         f"- **中長期的な報酬**: {game_cycle.get('long_term_reward', '')}",
         "",
         "## アートスタイル",
@@ -336,6 +338,7 @@ async def async_generate(args: argparse.Namespace) -> int:
     logger.info(f"  モード: {config.mode}")
     logger.info(f"  推論モデル: {config.inference_model}")
     logger.info(f"  生成枚数: {config.generation.num_pitches}")
+    logger.info(f"  検索エンジン: {getattr(args, 'search_engine', 'ddg')}")
     logger.info(f"  画像生成: スキップ（generateモード）")
     logger.info("=" * 60)
 
@@ -357,8 +360,9 @@ async def async_generate(args: argparse.Namespace) -> int:
     logger.info(f"リクエスト情報保存: {request_info_path}")
 
     # パイプライン実行（skip_image=True → Steps 1-11のみ）
+    search_engine = getattr(args, "search_engine", "ddg")
     try:
-        results = await run_pipeline(topic=topic, config=config, output_dir=output_dir, skip_image=True)
+        results = await run_pipeline(topic=topic, config=config, output_dir=output_dir, skip_image=True, search_engine=search_engine)
     except Exception as e:
         logger.error(f"パイプライン実行エラー: {e}", exc_info=True)
         return 1
@@ -386,6 +390,7 @@ async def async_generate(args: argparse.Namespace) -> int:
         saved_files.append(files)
 
     _log_summary(saved_files, output_dir, skip_image=True)
+    _save_and_log_stats(results.get("stats", {}), output_dir)
     logger.info(f"出力ディレクトリ: {output_dir}")
     logger.info(f"画像生成するには: game-pitch render --dir {output_dir}")
 
@@ -542,6 +547,8 @@ async def async_full(args: argparse.Namespace) -> int:
         logger.info(f"  画像生成モデル: {config.image_model}")
         logger.info(f"  画像言語: {config.generation.language}")
     logger.info(f"  生成枚数: {config.generation.num_pitches}")
+    search_engine = getattr(args, "search_engine", "ddg")
+    logger.info(f"  検索エンジン: {search_engine}")
     logger.info(f"  画像生成: {'スキップ' if skip_image else '有効'}")
     logger.info("=" * 60)
 
@@ -565,7 +572,7 @@ async def async_full(args: argparse.Namespace) -> int:
 
     # パイプライン実行
     try:
-        results = await run_pipeline(topic=topic, config=config, output_dir=output_dir, skip_image=skip_image)
+        results = await run_pipeline(topic=topic, config=config, output_dir=output_dir, skip_image=skip_image, search_engine=search_engine)
     except Exception as e:
         logger.error(f"パイプライン実行エラー: {e}", exc_info=True)
         return 1
@@ -604,8 +611,33 @@ async def async_full(args: argparse.Namespace) -> int:
         saved_files.append(files)
 
     _log_summary(saved_files, output_dir, skip_image=skip_image, render_format=render_format)
+    _save_and_log_stats(results.get("stats", {}), output_dir)
 
     return 0
+
+
+def _save_and_log_stats(stats: dict, output_dir: Path) -> None:
+    """トークン統計をログ出力し、stats.jsonとして保存する"""
+    if not stats or stats.get("grand_total", 0) == 0:
+        logger.info("トークン使用量: データなし（ADKがトークン情報を公開していない可能性があります）")
+        return
+
+    # コンソールサマリー
+    logger.info("\n" + "-" * 40)
+    logger.info("トークン使用量サマリー")
+    logger.info("-" * 40)
+    for agent_stat in stats.get("agents", []):
+        logger.info(f"  {agent_stat['agent']}: {agent_stat['total']:,} tokens "
+                     f"(in: {agent_stat['input_tokens']:,}, out: {agent_stat['output_tokens']:,})")
+    logger.info(f"  合計: {stats['grand_total']:,} tokens "
+                 f"(in: {stats['total_input_tokens']:,}, out: {stats['total_output_tokens']:,})")
+    logger.info("-" * 40)
+
+    # stats.json保存
+    stats_path = output_dir / "stats.json"
+    with open(stats_path, "w", encoding="utf-8") as f:
+        json.dump(stats, f, ensure_ascii=False, indent=2)
+    logger.info(f"トークン統計保存: {stats_path}")
 
 
 def main() -> None:
@@ -642,6 +674,7 @@ def main() -> None:
     gen_parser.add_argument("--mode", choices=["test", "prod"], default=None, help="実行モード")
     gen_parser.add_argument("--num-pitches", type=int, default=None, help="生成する企画書の枚数")
     gen_parser.add_argument("--config", default=None, help="設定ファイルのパス")
+    gen_parser.add_argument("--search-engine", choices=["ddg", "google"], default="ddg", help="検索エンジン (default: ddg)")
 
     # --- render サブコマンド ---
     render_parser = subparsers.add_parser(
@@ -669,6 +702,7 @@ def main() -> None:
     full_parser.add_argument("--language", choices=["ja", "en"], default=None, help="画像の言語")
     full_parser.add_argument("--no-image", action="store_true", help="画像生成をスキップ")
     full_parser.add_argument("--config", default=None, help="設定ファイルのパス")
+    full_parser.add_argument("--search-engine", choices=["ddg", "google"], default="ddg", help="検索エンジン (default: ddg)")
 
     args = parser.parse_args()
 

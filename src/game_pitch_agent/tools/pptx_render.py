@@ -307,13 +307,19 @@ def _game_cycle_text(pitch: dict) -> str:
     if not isinstance(game_cycle, dict):
         return ""
     lines = []
+    trigger = game_cycle.get("trigger", "")
     main_action = game_cycle.get("main_action", "")
     short_reward = game_cycle.get("short_term_reward", "")
+    escalation = game_cycle.get("escalation", "")
     long_reward = game_cycle.get("long_term_reward", "")
+    if trigger:
+        lines.append(f"● きっかけ: {trigger}")
     if main_action:
         lines.append(f"● メインアクション: {main_action}")
     if short_reward:
         lines.append(f"● 短期的な報酬: {short_reward}")
+    if escalation:
+        lines.append(f"● エスカレーション: {escalation}")
     if long_reward:
         lines.append(f"● 中長期的な報酬: {long_reward}")
     return "\n".join(lines)

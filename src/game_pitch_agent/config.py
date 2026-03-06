@@ -22,6 +22,8 @@ class GenerationConfig(BaseModel):
     image_width: int = 1024
     image_height: int = 512
     language: Literal["ja", "en"] = "ja"
+    critique_threshold: float = 6.0
+    critique_max_reruns: int = 3
 
 
 class OutputConfig(BaseModel):
