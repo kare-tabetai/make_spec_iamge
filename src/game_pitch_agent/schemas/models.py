@@ -145,6 +145,11 @@ class ExpandedPitch(BaseModel):
     art_style: str = Field(..., description="アートスタイル・ビジュアル方針")
     usp: str = Field(..., description="独自の売り（USP）")
     feasibility_note: str = Field(..., description="実現可能性に関する補足")
+    play_scene: str = Field(default="", description="プレイシーン描写（30-50文字の具体的ワンシーン）")
+    elevator_pitch: str = Field(default="", description="エレベーターピッチ（[作品A] meets [作品B] 形式）")
+    emotional_curve: str = Field(default="", description="感情曲線（プレイ開始〜1時間の感情変化）")
+    target_player: str = Field(default="", description="ターゲットプレイヤー像")
+    camera_perspective: str = Field(default="", description="ゲーム視点（2D横スクロール/2D見下ろし/TPS/FPS/アイソメトリック等）")
 
 
 class ExpandedIdeasOutput(BaseModel):

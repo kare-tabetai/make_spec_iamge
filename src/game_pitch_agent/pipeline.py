@@ -26,6 +26,7 @@ from .agents import (
     create_critique_agent,
 )
 from .config import AppConfig
+from .constraints import generate_constraint_cards
 from .schemas.models import (
     ResearchOutput,
     BrainstormOutput,
@@ -181,11 +182,18 @@ async def run_pipeline(
         session_service=session_service,
     )
 
+    # ランダム制約カードを生成して注入
+    constraint_cards = generate_constraint_cards(num_agents=5)
+    logger.info(f"制約カード生成: {len(constraint_cards)}セット")
+    for i, card in enumerate(constraint_cards):
+        logger.debug(f"  Agent {i+1}: {card}")
+
     # 初期セッション状態
     initial_state = {
         "topic": topic,
         "num_pitches": num_pitches,
         "min_ideas_count": min_ideas,
+        "constraint_cards": constraint_cards,
     }
 
     # セッション作成

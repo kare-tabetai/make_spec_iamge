@@ -66,7 +66,7 @@ def render_pitch_pptx(
         right_body=None,
         right_custom=_game_cycle_text(pitch),
     )
-    _add_two_column_row(
+    y_cursor = _add_two_column_row(
         slide, y_cursor,
         left_title="アートスタイル",
         left_body=pitch.get("art_style", ""),
@@ -76,6 +76,8 @@ def render_pitch_pptx(
         right_extra_title="実現可能性",
         right_extra_body=pitch.get("feasibility_note", ""),
     )
+    # 新フィールド行: プレイシーン + 感情曲線/ターゲット
+    _add_new_fields_row(slide, y_cursor, pitch)
 
     prs.save(output_path)
     logger.info(f"PPTX保存完了: {output_path}")
@@ -156,8 +158,9 @@ def _add_title_bar(slide, pitch: dict) -> int:
             font_size=14, color=COLOR_WHITE,
         )
 
-    # ジャンル / プラットフォーム バッジ
-    badge_text = " / ".join(filter(None, [genre, platform]))
+    # ジャンル / プラットフォーム / 視点 バッジ
+    camera_perspective = pitch.get("camera_perspective", "")
+    badge_text = " / ".join(filter(None, [genre, platform, camera_perspective]))
     if badge_text:
         badge_left = SLIDE_WIDTH - MARGIN - Inches(3.5)
         badge = _add_rect(
@@ -299,6 +302,52 @@ def _add_two_column_row(
     )
 
     return y_top + row_height + Inches(0.15)
+
+
+def _add_new_fields_row(slide, y_top: int, pitch: dict) -> None:
+    """新フィールド（プレイシーン、エレベーターピッチ、感情曲線、ターゲット、視点）を描画する。"""
+    play_scene = pitch.get("play_scene", "")
+    elevator_pitch = pitch.get("elevator_pitch", "")
+    emotional_curve = pitch.get("emotional_curve", "")
+    target_player = pitch.get("target_player", "")
+    camera_perspective = pitch.get("camera_perspective", "")
+
+    # 表示する内容がなければスキップ
+    if not any([play_scene, elevator_pitch, emotional_curve, target_player, camera_perspective]):
+        return
+
+    row_height = Inches(1.4)
+    gap = Inches(0.2)
+
+    # 左カラム: プレイシーン + エレベーターピッチ
+    left_parts = []
+    if elevator_pitch:
+        left_parts.append(f"Pitch: {elevator_pitch}")
+    if play_scene:
+        left_parts.append(f"Scene: {play_scene}")
+    _add_section_box(
+        slide,
+        left=MARGIN, top=y_top + Inches(0.1),
+        width=COL_WIDTH, height=row_height,
+        title="プレイシーン / ピッチ",
+        body="\n".join(left_parts),
+    )
+
+    # 右カラム: 感情曲線 + ターゲット + 視点
+    right_parts = []
+    if emotional_curve:
+        right_parts.append(f"感情曲線: {emotional_curve}")
+    if target_player:
+        right_parts.append(f"ターゲット: {target_player}")
+    if camera_perspective:
+        right_parts.append(f"視点: {camera_perspective}")
+    _add_section_box(
+        slide,
+        left=MARGIN + COL_WIDTH + gap, top=y_top + Inches(0.1),
+        width=COL_WIDTH, height=row_height,
+        title="体験デザイン",
+        body="\n".join(right_parts),
+    )
 
 
 def _game_cycle_text(pitch: dict) -> str:

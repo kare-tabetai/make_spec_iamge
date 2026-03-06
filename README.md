@@ -113,7 +113,7 @@ GOOGLE_API_KEY=your_api_key_here
 
 ```bash
 # テストモードで企画書を生成
-uv run game-pitch generate --topic "お題:「不自由」"
+uv run game-pitch generate --topic "お題:「不自由」" --num-pitches 5
 
 # 本番モードで5件生成
 uv run game-pitch generate --topic "お題:「不自由」" --mode prod --num-pitches 5
@@ -240,6 +240,7 @@ game-pitch-agent/
 │   │   ├── pptx_render.py    # PPTX 企画書生成ツール
 │   │   └── pptx_convert.py   # PPTX -> PDF/PNG 変換ツール
 │   ├── config.py             # 設定ローダー
+│   ├── constraints.py        # ランダム制約カード定義
 │   ├── pipeline.py           # SequentialAgent パイプライン
 │   └── main.py               # CLI エントリーポイント
 ├── config.yaml               # 設定ファイル
@@ -267,6 +268,7 @@ game-pitch-agent/
 
 | バージョン | 日付 | 内容 |
 |-----------|------|------|
+| 0.7.0 | 2026-03-06 | 企画書の面白さ・多様性向上: (1)CoreIdeaAgentでcross_connections活用 (2)ExpansionAgentにFew-shot例示追加 (3)新フィールド5種追加(play_scene/elevator_pitch/emotional_curve/target_player/camera_perspective) (4)Markdown出力をテーブル+フローチャート形式に刷新 (5)PPTX出力に新フィールド反映 (6)ランダム制約カードによるブレスト多様性強化 ([Steering](Docs/Steering/202603062330_improve-pitch-quality-diversity.md)) |
 | 0.6.0 | 2026-03-06 | 12項目改善: CritiqueAgent+リファインループ新設、マンダラート2段階展開、Google検索オプション化(`--search-engine`)、温度設定個別チューニング、ゲームサイクル構造深化(trigger/escalation)、不満点調査追加、品質フィルタリング強化、画像生成リトライ機構、トークン統計出力(stats.json)、JSON検証ミドルウェア、ImagePromptバランス精密化、ゲーム画面モックアップ指示追加 ([Steering](Docs/Steering/improvement-12items-202603060330.md)) |
 | 0.5.1 | 2026-03-06 | PPTX→PDF変換の日本語パス問題を修正: 一時ディレクトリ経由で変換することでLibreOfficeの非ASCIIパス問題を回避 ([Steering](Docs/Steering/fix-pptx-pdf-japanese-path-20260306.md)) |
 | 0.5.0 | 2026-03-06 | PPTX出力時にPDF/PNGも同時出力: LibreOffice headless + pdftoppm で自動変換。ツール未インストール時はPPTXのみ生成 ([Steering](Docs/Steering/add-pptx-export-20260306.md)) |

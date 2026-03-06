@@ -24,41 +24,108 @@ logger = logging.getLogger(__name__)
 def build_markdown(pitch: dict, image_path: str | None = None, pptx_path: str | None = None, pdf_path: str | None = None, png_path: str | None = None) -> str:
     """企画書の内容をMarkdown形式に変換する"""
     game_cycle = pitch.get("game_cycle", {})
+
+    # --- 冒頭: タイトル + キャッチコピー + エレベーターピッチ ---
     lines = [
         f"# {pitch.get('title', '無題')}",
         "",
         f"> {pitch.get('catchcopy', '')}",
         "",
-        "---",
-        "",
+    ]
+
+    elevator_pitch = pitch.get("elevator_pitch", "")
+    if elevator_pitch:
+        lines += [f"*{elevator_pitch}*", ""]
+
+    lines += ["---", ""]
+
+    # --- プレイシーン ---
+    play_scene = pitch.get("play_scene", "")
+    if play_scene:
+        lines += [
+            "## プレイシーン",
+            play_scene,
+            "",
+        ]
+
+    # --- 基本情報テーブル ---
+    lines += ["## 基本情報", ""]
+    table_rows = [
+        ("ジャンル", pitch.get("genre", "")),
+        ("プラットフォーム", pitch.get("platform", "")),
+    ]
+    camera = pitch.get("camera_perspective", "")
+    if camera:
+        table_rows.append(("視点", camera))
+    table_rows.append(("アートスタイル", pitch.get("art_style", "")))
+    target = pitch.get("target_player", "")
+    if target:
+        table_rows.append(("ターゲット", target))
+
+    lines += ["| 項目 | 内容 |", "|------|------|"]
+    for label, value in table_rows:
+        lines.append(f"| {label} | {value} |")
+    lines.append("")
+
+    # --- コンセプト ---
+    lines += [
         "## コンセプト",
         pitch.get("concept", ""),
         "",
+    ]
+
+    # --- ゲーム概要 ---
+    lines += [
         "## ゲーム概要",
         pitch.get("overview", ""),
         "",
-        f"**ジャンル**: {pitch.get('genre', '')}",
-        f"**プラットフォーム**: {pitch.get('platform', '')}",
-        "",
+    ]
+
+    # --- コアメカニクス ---
+    lines += [
         "## コアメカニクス",
         pitch.get("core_mechanic", ""),
         "",
-        "## ゲームサイクル",
-        f"- **きっかけ**: {game_cycle.get('trigger', '')}",
-        f"- **メインアクション**: {game_cycle.get('main_action', '')}",
-        f"- **短期的な報酬**: {game_cycle.get('short_term_reward', '')}",
-        f"- **エスカレーション**: {game_cycle.get('escalation', '')}",
-        f"- **中長期的な報酬**: {game_cycle.get('long_term_reward', '')}",
-        "",
-        "## アートスタイル",
-        pitch.get("art_style", ""),
-        "",
-        "## 差別化ポイント（USP）",
-        pitch.get("usp", ""),
-        "",
+    ]
+
+    # --- ゲームサイクル（フローチャート形式） ---
+    trigger = game_cycle.get("trigger", "")
+    main_action = game_cycle.get("main_action", "")
+    short_reward = game_cycle.get("short_term_reward", "")
+    escalation = game_cycle.get("escalation", "")
+    long_reward = game_cycle.get("long_term_reward", "")
+
+    lines.append("## ゲームサイクル")
+    cycle_parts = [p for p in [trigger, main_action, short_reward, escalation] if p]
+    if cycle_parts:
+        lines.append("")
+        lines.append(" -> ".join(cycle_parts) + " -> (loop)")
+    if long_reward:
+        lines.append("")
+        lines.append(f"**長期目標**: {long_reward}")
+    lines.append("")
+
+    # --- 感情曲線 ---
+    emotional_curve = pitch.get("emotional_curve", "")
+    if emotional_curve:
+        lines += [
+            "## 感情曲線",
+            emotional_curve,
+            "",
+        ]
+
+    # --- USP（ボックス引用） ---
+    usp = pitch.get("usp", "")
+    if usp:
+        lines += [f"> **USP**: {usp}", ""]
+
+    # --- 実現可能性 ---
+    lines += [
         "## 実現可能性",
         pitch.get("feasibility_note", ""),
     ]
+
+    # --- 添付ファイル ---
     if image_path:
         lines += [
             "",

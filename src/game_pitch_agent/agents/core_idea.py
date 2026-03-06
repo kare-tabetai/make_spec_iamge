@@ -12,6 +12,13 @@ Session State から以下を読み込んでください：
 - "brainstorm_output": ブレインストーミング結果
 - "num_pitches": 生成する企画書の数（デフォルト3）
 
+## cross_connections の活用（重要）
+brainstorm_output に含まれる "cross_connections"（異なるアイデア発散手法間の意外な組み合わせ）を積極的に活用してください。
+cross_connections は SCAMPER・6Hats・逆転思考・マンダラート・しりとり の5手法をまたいだ「化学反応」的な組み合わせです。
+- cross_connections の各項目を出発点として、少なくとも1つ以上のコアアイデアを生成してください
+- 単一手法のアイデアをそのまま採用するのではなく、複数手法の要素を融合させた新しいアイデアを生み出してください
+- cross_connections が存在しない場合は、ideas 内のアイデア同士を自ら組み合わせて同様の効果を得てください
+
 **重要**: `num_pitches * 2` 個以上のコアアイデアを生成してください。
 例: num_pitches=3 の場合、最低6個以上のアイデアが必要です。
 
