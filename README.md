@@ -66,7 +66,9 @@ output/
     │   ├── pitch.md        # Markdown形式の企画書
     │   ├── pitch.json      # 構造化データ
     │   ├── pitch_image.png # 企画書ビジュアル画像（--format image時）
-    │   └── pitch.pptx      # PowerPoint企画書（--format pptx時）
+    │   ├── pitch.pptx      # PowerPoint企画書（--format pptx時）
+    │   ├── pitch.pdf       # PDF版（PPTX出力時に自動生成、要LibreOffice）
+    │   └── pitch.png       # PNGプレビュー（PPTX出力時に自動生成、要pdftoppm）
     └── pitch_2/
 ```
 
@@ -227,7 +229,8 @@ game-pitch-agent/
 │   ├── tools/
 │   │   ├── web_search.py     # DuckDuckGo 検索ツール
 │   │   ├── image_gen.py      # Gemini 画像生成ツール
-│   │   └── pptx_render.py    # PPTX 企画書生成ツール
+│   │   ├── pptx_render.py    # PPTX 企画書生成ツール
+│   │   └── pptx_convert.py   # PPTX -> PDF/PNG 変換ツール
 │   ├── config.py             # 設定ローダー
 │   ├── pipeline.py           # SequentialAgent パイプライン
 │   └── main.py               # CLI エントリーポイント
@@ -248,11 +251,15 @@ game-pitch-agent/
 | `pillow` | 画像処理 |
 | `python-pptx` | PowerPoint（PPTX）生成 |
 | `python-dotenv` | `.env` ファイルの読み込み |
+| `libreoffice` | PPTX -> PDF変換（システムパッケージ、オプション） |
+| `poppler-utils` | PDF -> PNG変換（`pdftoppm`、システムパッケージ、オプション） |
+| `fonts-noto-cjk` | 日本語フォント（LibreOffice用、システムパッケージ、オプション） |
 
 ## 更新履歴
 
 | バージョン | 日付 | 内容 |
 |-----------|------|------|
+| 0.5.0 | 2026-03-06 | PPTX出力時にPDF/PNGも同時出力: LibreOffice headless + pdftoppm で自動変換。ツール未インストール時はPPTXのみ生成 ([Steering](Docs/Steering/add-pptx-export-20260306.md)) |
 | 0.4.0 | 2026-03-05 | PPTX出力機能追加: `--format pptx` オプションでPowerPoint形式の企画書を出力可能に。画像生成AI不要で動作 ([Steering](Docs/Steering/add-pptx-render-20260305.md)) |
 | 0.3.0 | 2026-03-05 | サブコマンド化: `generate` / `render` / `full` の3コマンドに分離。テキスト生成のみ・画像のみ再生成が個別に実行可能に ([Steering](Docs/Steering/pipeline-subcommands-20260305.md)) |
 | 0.2.1 | 2026-03-01 | `--no-image` オプション追加: 画像生成をスキップしてMarkdownのみ出力可能に ([Steering](Docs/Steering/add-no-image-option-20260301.md)) |

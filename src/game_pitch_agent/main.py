@@ -16,11 +16,12 @@ from .config import AppConfig, load_config
 from .pipeline import run_pipeline, run_image_prompt_for_pitch, setup_logging, setup_output_directory, extract_json_from_state
 from .tools.image_gen import generate_pitch_image
 from .tools.pptx_render import render_pitch_pptx
+from .tools.pptx_convert import convert_pptx
 
 logger = logging.getLogger(__name__)
 
 
-def build_markdown(pitch: dict, image_path: str | None = None, pptx_path: str | None = None) -> str:
+def build_markdown(pitch: dict, image_path: str | None = None, pptx_path: str | None = None, pdf_path: str | None = None, png_path: str | None = None) -> str:
     """企画書の内容をMarkdown形式に変換する"""
     game_cycle = pitch.get("game_cycle", {})
     lines = [
@@ -71,6 +72,15 @@ def build_markdown(pitch: dict, image_path: str | None = None, pptx_path: str | 
             "",
             "## ペラ1企画書（PPTX）",
             f"[PowerPoint企画書]({pptx_path})",
+        ]
+    if pdf_path:
+        lines += [
+            f"[PDF版]({pdf_path})",
+        ]
+    if png_path:
+        lines += [
+            "",
+            f"![企画書プレビュー]({png_path})",
         ]
     return "\n".join(lines)
 
@@ -127,11 +137,11 @@ def render_pitch_image(pitch_dir: Path, pitch: dict, image_prompt: dict, config:
     return str(image_file)
 
 
-def render_pitch_pptx_file(pitch_dir: Path, pitch: dict, image_path: str | None = None) -> str | None:
-    """企画書ディレクトリに対して PPTX 生成 + Markdown再生成を行う
+def render_pitch_pptx_file(pitch_dir: Path, pitch: dict, image_path: str | None = None) -> dict[str, str | None]:
+    """企画書ディレクトリに対して PPTX 生成 + PDF/PNG変換 + Markdown再生成を行う
 
     Returns:
-        生成された PPTX のパス文字列、または失敗時は None
+        {"pptx_path": str | None, "pdf_path": str | None, "png_path": str | None}
     """
     title = pitch.get("title", "無題")
     pptx_file = pitch_dir / "pitch.pptx"
@@ -154,17 +164,32 @@ def render_pitch_pptx_file(pitch_dir: Path, pitch: dict, image_path: str | None 
         )
     except Exception as e:
         logger.error(f"PPTX生成失敗: {e}", exc_info=True)
-        return None
+        return {"pptx_path": None, "pdf_path": None, "png_path": None}
 
-    # Markdown再生成（PPTX参照付き、既存画像があればそれも含む）
+    pptx_path_str = str(pptx_file)
+
+    # PPTX -> PDF/PNG 変換
+    converted = convert_pptx(pptx_path_str)
+    pdf_path = converted.get("pdf_path")
+    png_path = converted.get("png_path")
+
+    # Markdown再生成（PPTX/PDF/PNG参照付き、既存画像があればそれも含む）
     md_path = pitch_dir / "pitch.md"
     existing_image = Path(embed_image).name if embed_image else None
-    markdown_content = build_markdown(pitch, image_path=existing_image, pptx_path=pptx_file.name)
+    pdf_name = Path(pdf_path).name if pdf_path else None
+    png_name = Path(png_path).name if png_path else None
+    markdown_content = build_markdown(
+        pitch,
+        image_path=existing_image,
+        pptx_path=pptx_file.name,
+        pdf_path=pdf_name,
+        png_path=png_name,
+    )
     with open(md_path, "w", encoding="utf-8") as f:
         f.write(markdown_content)
     logger.info(f"Markdown再生成: {md_path}")
 
-    return str(pptx_file)
+    return {"pptx_path": pptx_path_str, "pdf_path": pdf_path, "png_path": png_path}
 
 
 def save_pitch_files(
@@ -198,9 +223,15 @@ def save_pitch_files(
     image_path = None
     pptx_path = None
 
+    pdf_path = None
+    png_path = None
+
     if render_format == "pptx":
-        # PPTX生成（画像生成不要）
-        pptx_path = render_pitch_pptx_file(pitch_dir, pitch)
+        # PPTX生成 + PDF/PNG変換
+        pptx_result = render_pitch_pptx_file(pitch_dir, pitch)
+        pptx_path = pptx_result.get("pptx_path")
+        pdf_path = pptx_result.get("pdf_path")
+        png_path = pptx_result.get("png_path")
     elif skip_image:
         logger.info("画像生成スキップ（--no-image 指定）")
     elif image_prompt:
@@ -223,6 +254,8 @@ def save_pitch_files(
         "markdown_path": str(pitch_dir / "pitch.md"),
         "image_path": image_path,
         "pptx_path": pptx_path,
+        "pdf_path": pdf_path,
+        "png_path": png_path,
     }
 
 
@@ -247,6 +280,10 @@ def _log_summary(saved_files: list[dict], output_dir: Path, skip_image: bool = F
             logger.info(f"    - Image: {files['image_path']}")
         if files.get("pptx_path"):
             logger.info(f"    - PPTX: {files['pptx_path']}")
+        if files.get("pdf_path"):
+            logger.info(f"    - PDF: {files['pdf_path']}")
+        if files.get("png_path"):
+            logger.info(f"    - PNG: {files['png_path']}")
     logger.info("=" * 60)
 
 
@@ -413,8 +450,8 @@ async def async_render(args: argparse.Namespace) -> int:
                 continue
 
             logger.info(f"\n--- PPTX生成: {title} ({pitch_dir.name}) ---")
-            result = render_pitch_pptx_file(pitch_dir, pitch)
-            if result:
+            pptx_result = render_pitch_pptx_file(pitch_dir, pitch)
+            if pptx_result.get("pptx_path"):
                 rendered_count += 1
         else:
             # 画像生成（既存ロジック）
