@@ -1,9 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "permissions": {
-    "allow": [
-      "*"
-    ],
+    "allow": ["*"],
     "deny": [
       "Read(**/.env*)",
       "Read(**/*.pem)",
@@ -15,5 +13,8 @@
   "enabledPlugins": {
     "frontend-design@claude-plugins-official": true,
     "everything-claude-code@everything-claude-code": true
+  },
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
   }
 }
