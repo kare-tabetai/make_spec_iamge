@@ -259,6 +259,7 @@ game-pitch-agent/
 
 | バージョン | 日付 | 内容 |
 |-----------|------|------|
+| 0.5.1 | 2026-03-06 | PPTX→PDF変換の日本語パス問題を修正: 一時ディレクトリ経由で変換することでLibreOfficeの非ASCIIパス問題を回避 ([Steering](Docs/Steering/fix-pptx-pdf-japanese-path-20260306.md)) |
 | 0.5.0 | 2026-03-06 | PPTX出力時にPDF/PNGも同時出力: LibreOffice headless + pdftoppm で自動変換。ツール未インストール時はPPTXのみ生成 ([Steering](Docs/Steering/add-pptx-export-20260306.md)) |
 | 0.4.0 | 2026-03-05 | PPTX出力機能追加: `--format pptx` オプションでPowerPoint形式の企画書を出力可能に。画像生成AI不要で動作 ([Steering](Docs/Steering/add-pptx-render-20260305.md)) |
 | 0.3.0 | 2026-03-05 | サブコマンド化: `generate` / `render` / `full` の3コマンドに分離。テキスト生成のみ・画像のみ再生成が個別に実行可能に ([Steering](Docs/Steering/pipeline-subcommands-20260305.md)) |

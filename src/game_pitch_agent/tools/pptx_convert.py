@@ -3,6 +3,7 @@
 import logging
 import shutil
 import subprocess
+import tempfile
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
@@ -33,22 +34,42 @@ def convert_pptx_to_pdf(pptx_path: str, output_dir: str | None = None) -> str | 
 
     outdir = Path(output_dir) if output_dir else pptx.parent
 
+    # LibreOffice headless は非ASCIIパスを処理できないため、
+    # 一時ディレクトリ（ASCII-onlyパス）経由で変換する
     try:
-        result = subprocess.run(
-            [
-                "libreoffice",
-                "--headless",
-                "--convert-to", "pdf",
-                "--outdir", str(outdir),
-                str(pptx),
-            ],
-            capture_output=True,
-            text=True,
-            timeout=LIBREOFFICE_TIMEOUT,
-        )
-        if result.returncode != 0:
-            logger.warning(f"LibreOffice変換失敗 (exit {result.returncode}): {result.stderr}")
-            return None
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp_pptx = Path(tmpdir) / "input.pptx"
+            shutil.copy2(pptx, tmp_pptx)
+
+            result = subprocess.run(
+                [
+                    "libreoffice",
+                    "--headless",
+                    "--convert-to", "pdf",
+                    "--outdir", tmpdir,
+                    str(tmp_pptx),
+                ],
+                capture_output=True,
+                text=True,
+                timeout=LIBREOFFICE_TIMEOUT,
+            )
+
+            if result.returncode != 0:
+                logger.warning(f"LibreOffice変換失敗 (exit {result.returncode}): {result.stderr}")
+                return None
+
+            # returncode == 0 でも stderr にエラーが含まれる場合がある
+            if result.stderr and "Error:" in result.stderr:
+                logger.warning(f"LibreOffice stderr にエラー検出: {result.stderr}")
+
+            tmp_pdf = Path(tmpdir) / "input.pdf"
+            if not tmp_pdf.exists():
+                logger.warning(f"PDF変換後のファイルが見つかりません (tmpdir): {tmp_pdf}")
+                return None
+
+            final_pdf = outdir / f"{pptx.stem}.pdf"
+            shutil.move(str(tmp_pdf), str(final_pdf))
+
     except subprocess.TimeoutExpired:
         logger.warning(f"LibreOffice変換タイムアウト ({LIBREOFFICE_TIMEOUT}秒)")
         return None
@@ -56,12 +77,11 @@ def convert_pptx_to_pdf(pptx_path: str, output_dir: str | None = None) -> str | 
         logger.warning(f"LibreOffice変換エラー: {e}")
         return None
 
-    pdf_path = outdir / f"{pptx.stem}.pdf"
-    if pdf_path.exists():
-        logger.info(f"PDF生成完了: {pdf_path}")
-        return str(pdf_path)
+    if final_pdf.exists():
+        logger.info(f"PDF生成完了: {final_pdf}")
+        return str(final_pdf)
 
-    logger.warning(f"PDF変換後のファイルが見つかりません: {pdf_path}")
+    logger.warning(f"PDF変換後のファイルが見つかりません: {final_pdf}")
     return None
 
 
