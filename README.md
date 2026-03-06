@@ -10,19 +10,19 @@
 トピック入力
     │
     ▼
-[1] GoogleResearchAgent      ← Google検索でトピック調査
+[1] GoogleResearchAgent      ← Google検索でトピック調査（--search-engine google 時のみ）
     │
     ▼
-[2] DuckDuckGoResearchAgent  ← DDG検索で補完・インディー/海外事例
+[2] DuckDuckGoResearchAgent  ← DDG検索（デフォルト単独 / Google併用時は補完）
     │
     ▼
-[3-8] BrainstormPipeline     ← 5手法×サブエージェント + 統合
+[3-9] BrainstormPipeline     ← 5手法×サブエージェント + 品質フィルタリング統合
     ├── [3] ScamperAgent       ← SCAMPER 7視点
     ├── [4] SixHatsAgent       ← 6つの思考帽子
     ├── [5] ReverseAgent       ← 逆転思考
-    ├── [6] MandalartAgent     ← マンダラート（曼荼羅チャート）
+    ├── [6] MandalartPipeline  ← マンダラート2段階展開（Stage1→Stage2）
     ├── [7] ShiritoriAgent     ← アイデアしりとり
-    └── [8] BrainstormMergeAgent ← 5手法の統合
+    └── [8] BrainstormMergeAgent ← 5手法の統合 + 品質フィルタリング
     │
     ▼
 [9] CoreIdeaAgent            ← コアアイデアの抽出・具体化
@@ -34,10 +34,13 @@
 [11] ExpansionAgent          ← 選定アイデアをペラ1企画書に展開
     │
     ▼
-[12] ImagePromptAgent        ← 企画書ビジュアルの画像生成プロンプト作成
+[12] CritiqueAgent           ← 品質批評（閾値未満→ExpansionAgent再実行、最大3回）
     │
     ▼
-出力: Markdown / JSON / PNG画像
+[13] ImagePromptAgent        ← 企画書ビジュアルの画像生成プロンプト作成
+    │
+    ▼
+出力: Markdown / JSON / PNG画像 / stats.json
 ```
 
 ## 出力サンプル
@@ -162,6 +165,7 @@ uv run game-pitch full --topic "お題:「不自由」" --no-image
 | `--mode` | 実行モード `test` / `prod` | `config.yaml` の設定値 |
 | `--num-pitches` | 生成する企画書の枚数 | test: 2 / prod: 3（`config.yaml`） |
 | `--config` | 設定ファイルのパス | プロジェクトルートの `config.yaml` |
+| `--search-engine` | 検索エンジン `ddg` / `google` | `ddg` |
 
 #### `render` オプション
 
@@ -185,6 +189,7 @@ uv run game-pitch full --topic "お題:「不自由」" --no-image
 | `--language` | 画像の言語 `ja` / `en` | `config.yaml` の設定値（`ja`） |
 | `--no-image` | 画像生成をスキップ | `false` |
 | `--config` | 設定ファイルのパス | プロジェクトルートの `config.yaml` |
+| `--search-engine` | 検索エンジン `ddg` / `google` | `ddg` |
 
 ## 設定ファイル
 
@@ -207,6 +212,8 @@ generation:
   image_width: 1024        # 画像の幅（px）
   image_height: 512        # 画像の高さ（px）
   language: ja             # 企画書画像の言語: ja（日本語）/ en（英語）
+  critique_threshold: 6.0  # CritiqueAgentの品質閾値（この値未満で再実行）
+  critique_max_reruns: 3   # 最大リラン回数
 
 output:
   directory: output        # 出力ディレクトリ
@@ -223,6 +230,7 @@ game-pitch-agent/
 │   │   ├── core_idea.py      # コアアイデア抽出エージェント
 │   │   ├── evaluation.py     # アイデア評価・選定エージェント
 │   │   ├── expansion.py      # 企画書展開エージェント
+│   │   ├── critique.py       # 品質批評エージェント（リファインループ）
 │   │   └── image_prompt.py   # 画像プロンプト生成エージェント
 │   ├── schemas/
 │   │   └── models.py         # Pydantic スキーマ定義
@@ -259,6 +267,7 @@ game-pitch-agent/
 
 | バージョン | 日付 | 内容 |
 |-----------|------|------|
+| 0.6.0 | 2026-03-06 | 12項目改善: CritiqueAgent+リファインループ新設、マンダラート2段階展開、Google検索オプション化(`--search-engine`)、温度設定個別チューニング、ゲームサイクル構造深化(trigger/escalation)、不満点調査追加、品質フィルタリング強化、画像生成リトライ機構、トークン統計出力(stats.json)、JSON検証ミドルウェア、ImagePromptバランス精密化、ゲーム画面モックアップ指示追加 ([Steering](Docs/Steering/improvement-12items-202603060330.md)) |
 | 0.5.1 | 2026-03-06 | PPTX→PDF変換の日本語パス問題を修正: 一時ディレクトリ経由で変換することでLibreOfficeの非ASCIIパス問題を回避 ([Steering](Docs/Steering/fix-pptx-pdf-japanese-path-20260306.md)) |
 | 0.5.0 | 2026-03-06 | PPTX出力時にPDF/PNGも同時出力: LibreOffice headless + pdftoppm で自動変換。ツール未インストール時はPPTXのみ生成 ([Steering](Docs/Steering/add-pptx-export-20260306.md)) |
 | 0.4.0 | 2026-03-05 | PPTX出力機能追加: `--format pptx` オプションでPowerPoint形式の企画書を出力可能に。画像生成AI不要で動作 ([Steering](Docs/Steering/add-pptx-render-20260305.md)) |

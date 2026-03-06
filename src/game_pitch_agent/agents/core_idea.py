@@ -74,5 +74,5 @@ def create_core_idea_agent(model_name: str) -> LlmAgent:
         model=model_name,
         instruction=CORE_IDEA_INSTRUCTION,
         output_key="core_ideas_output",
-        generate_content_config=genai_types.GenerateContentConfig(temperature=1.5),
+        generate_content_config=genai_types.GenerateContentConfig(temperature=1.3),
     )

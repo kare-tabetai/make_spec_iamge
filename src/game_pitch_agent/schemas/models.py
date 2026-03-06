@@ -22,6 +22,7 @@ class ResearchOutput(BaseModel):
     research_items: list[ResearchItem] = Field(..., description="調査結果リスト")
     market_context: str = Field(..., description="市場・トレンドの文脈")
     related_games: list[str] = Field(default_factory=list, description="関連する既存ゲームタイトル")
+    pain_points: list[str] = Field(default_factory=list, description="プレイヤーの不満点・レビュー批判")
 
 
 # ────────────────────────────────────────────────────────────────
@@ -36,11 +37,29 @@ class BrainstormIdea(BaseModel):
     is_convention_breaking: bool = Field(default=False, description="ゲームの常識を覆すアイデアか")
 
 
+class FilteredIdea(BaseModel):
+    """品質フィルタリングで除外されたアイデア"""
+    idea: str = Field(..., description="除外されたアイデアの内容")
+    method: str = Field(..., description="使用した手法")
+    exclusion_reason: str = Field(..., description="除外理由")
+
+
 class BrainstormOutput(BaseModel):
     """BrainstormAgent の出力"""
     theme: str = Field(..., description="ブレインストーミングのテーマ")
     ideas: list[BrainstormIdea] = Field(..., description="発散したアイデアリスト")
     cross_connections: list[str] = Field(default_factory=list, description="アイデア間の意外な組み合わせ")
+    filtered_ideas: list[FilteredIdea] = Field(default_factory=list, description="品質フィルタリングで除外されたアイデア")
+
+
+class MandalartOutput(BaseModel):
+    """マンダラート2段階展開の出力"""
+    center_word: str = Field(..., description="中心テーマ")
+    stage1_words: list[str] = Field(..., description="1段階目: テーマから連想した8つの関連語")
+    stage2_expansions: dict[str, list[str]] = Field(default_factory=dict, description="2段階目: 各関連語から展開した8語")
+    all_expanded_words: list[str] = Field(default_factory=list, description="全展開語（最大64語）")
+    selected_hints: list[str] = Field(default_factory=list, description="ランダム選出したヒント語（8語）")
+    ideas: list[BrainstormIdea] = Field(default_factory=list, description="ヒント語から生成したアイデア")
 
 
 # ────────────────────────────────────────────────────────────────
@@ -105,9 +124,11 @@ class EvaluationOutput(BaseModel):
 
 class GameCycle(BaseModel):
     """ゲームサイクル（ループ）"""
+    trigger: str = Field(default="", description="アクションを起こすきっかけ・動機")
     main_action: str = Field(..., description="メインアクション")
     short_term_reward: str = Field(..., description="短期的な報酬")
     long_term_reward: str = Field(..., description="中長期的な報酬")
+    escalation: str = Field(default="", description="繰り返すごとにエスカレートする要素")
 
 
 class ExpandedPitch(BaseModel):
@@ -152,6 +173,26 @@ class ImagePromptsOutput(BaseModel):
 # ────────────────────────────────────────────────────────────────
 # 最終出力ドキュメント
 # ────────────────────────────────────────────────────────────────
+
+# ────────────────────────────────────────────────────────────────
+# CritiqueAgent の出力
+# ────────────────────────────────────────────────────────────────
+
+class CritiqueFeedback(BaseModel):
+    """企画書1件に対する批評"""
+    idea_id: str = Field(..., description="対象のアイデアID")
+    concept_mechanic_alignment: float = Field(..., ge=1, le=10, description="コンセプトとメカニクスの整合性 (1-10)")
+    game_cycle_concreteness: float = Field(..., ge=1, le=10, description="ゲームサイクルの具体性 (1-10)")
+    catchcopy_originality: float = Field(..., ge=1, le=10, description="キャッチコピーの独自性 (1-10)")
+    usp_differentiation: float = Field(..., ge=1, le=10, description="USPの差別化力 (1-10)")
+    overall_score: float = Field(..., ge=1, le=10, description="総合スコア (4軸の平均)")
+    feedback: str = Field(..., description="具体的な改善点")
+
+
+class CritiqueOutput(BaseModel):
+    """CritiqueAgent の出力"""
+    critiques: list[CritiqueFeedback] = Field(..., description="各企画書への批評リスト")
+
 
 class PitchDocument(BaseModel):
     """最終的なペラ1企画書ドキュメント"""
