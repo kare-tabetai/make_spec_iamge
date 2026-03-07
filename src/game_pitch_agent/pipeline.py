@@ -24,6 +24,7 @@ from .agents import (
     create_expansion_agent,
     create_image_prompt_agent,
     create_critique_agent,
+    create_pitch_evaluator_agent,
 )
 from .config import AppConfig
 from .constraints import generate_constraint_cards
@@ -36,6 +37,7 @@ from .schemas.models import (
     ExpandedIdeasOutput,
     ImagePromptsOutput,
     MandalartOutput,
+    PitchEvaluation,
 )
 
 logger = logging.getLogger(__name__)
@@ -557,3 +559,76 @@ async def run_image_prompt_for_pitch(pitch: dict, config: AppConfig) -> dict | N
 
     logger.warning("ImagePromptAgent から結果を取得できませんでした")
     return None
+
+
+async def run_pitch_evaluation(pitch_data: dict, topic: str, config: AppConfig) -> dict | None:
+    """単一の企画書に対してPitchEvaluatorAgentを実行し、評価結果を返す。
+
+    Args:
+        pitch_data: pitch.json の内容（idea_id, title, pitch, image_prompt を含む）
+        topic: 評価トピック
+        config: アプリ設定
+
+    Returns:
+        評価結果 dict または None
+    """
+    model = config.inference_model
+    agent = create_pitch_evaluator_agent(model)
+
+    pipeline = SequentialAgent(
+        name="PitchEvaluatorOnlyPipeline",
+        sub_agents=[agent],
+    )
+
+    session_service = InMemorySessionService()
+    runner = Runner(
+        agent=pipeline,
+        app_name="game_pitch_agent",
+        session_service=session_service,
+    )
+
+    initial_state = {
+        "pitch_data": pitch_data,
+        "evaluation_topic": topic,
+    }
+
+    session = await session_service.create_session(
+        app_name="game_pitch_agent",
+        user_id="user",
+        state=initial_state,
+    )
+
+    message = genai_types.Content(
+        role="user",
+        parts=[genai_types.Part(text="この企画書を評価してください")],
+    )
+
+    async for event in runner.run_async(
+        user_id="user",
+        session_id=session.id,
+        new_message=message,
+    ):
+        if event.is_final_response():
+            break
+
+    final_session = await session_service.get_session(
+        app_name="game_pitch_agent",
+        user_id="user",
+        session_id=session.id,
+    )
+    final_state = final_session.state if final_session else {}
+
+    result = extract_json_from_state(final_state, "pitch_evaluation_output")
+    if result:
+        # Pydanticバリデーション（警告のみ）
+        if isinstance(result, dict):
+            try:
+                PitchEvaluation.model_validate(result)
+                logger.debug("PitchEvaluation バリデーション成功")
+            except ValidationError as ve:
+                logger.warning(f"PitchEvaluation バリデーション警告: {ve}")
+        logger.info("✓ PitchEvaluatorAgent の結果を取得しました")
+    else:
+        logger.warning("✗ PitchEvaluatorAgent の結果が取得できませんでした")
+
+    return result

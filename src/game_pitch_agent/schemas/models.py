@@ -199,6 +199,33 @@ class CritiqueOutput(BaseModel):
     critiques: list[CritiqueFeedback] = Field(..., description="各企画書への批評リスト")
 
 
+class PitchEvaluation(BaseModel):
+    """企画書の詳細評価結果（事後評価用）"""
+    idea_id: str = Field(..., description="アイデアID")
+    title: str = Field(..., description="ゲームタイトル")
+    topic: str = Field(..., description="評価対象のトピック")
+    # 固定17評価軸 (0-10)
+    concept_novelty: float = Field(..., ge=0, le=10, description="コンセプトの斬新さ")
+    core_mechanic_novelty: float = Field(..., ge=0, le=10, description="コアメカニクスの斬新さ")
+    mechanic_intuitiveness: float = Field(..., ge=0, le=10, description="メカニクスが直感的か")
+    feasibility: float = Field(..., ge=0, le=10, description="実現可能性")
+    theme_concept_relevance: float = Field(..., ge=0, le=10, description="テーマ×コンセプト関連度")
+    theme_art_style_relevance: float = Field(..., ge=0, le=10, description="テーマ×アートスタイル関連度")
+    theme_core_mechanic_relevance: float = Field(..., ge=0, le=10, description="テーマ×コアメカニクス関連度")
+    concept_uniqueness: float = Field(..., ge=0, le=10, description="コンセプトの独自性")
+    core_mechanic_uniqueness: float = Field(..., ge=0, le=10, description="コアメカニクスの独自性")
+    hook_strength: float = Field(..., ge=0, le=10, description="フックの強さ")
+    art_style_concept_coherence: float = Field(..., ge=0, le=10, description="アートスタイル×コンセプト関連度")
+    concept_mechanic_coherence: float = Field(..., ge=0, le=10, description="コンセプト×コアメカニクス関連度")
+    mechanic_art_style_coherence: float = Field(..., ge=0, le=10, description="コアメカニクス×アートスタイル関連度")
+    narrative_mechanic_integration: float = Field(..., ge=0, le=10, description="ナラティブとメカニクスの融合度")
+    game_feel: float = Field(..., ge=0, le=10, description="手触り・ジュース感")
+    risk_reward_depth: float = Field(..., ge=0, le=10, description="リスクとリターン・駆け引きの深み")
+    overall_fun: float = Field(..., ge=0, le=10, description="全体の面白さ")
+    # 集計
+    summary: str = Field(..., description="総合評価コメント")
+
+
 class PitchDocument(BaseModel):
     """最終的なペラ1企画書ドキュメント"""
     idea_id: str

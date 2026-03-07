@@ -7,11 +7,11 @@
 | 項目 | 内容 |
 |------|------|
 | フレームワーク | Google ADK（Agent Development Kit） |
-| エージェント構成 | メインパイプライン（SequentialAgent、11ステップ）+ CritiqueAgent（リファインループ）+ ImagePromptAgent（個別実行）。計13ステップ |
+| エージェント構成 | メインパイプライン（SequentialAgent、11ステップ）+ CritiqueAgent（リファインループ）+ ImagePromptAgent（個別実行）+ PitchEvaluatorAgent（事後評価、オプション）。計14ステップ |
 | 状態管理 | `InMemorySessionService`（Session State） |
 | 実行方式 | `Runner.run_async()` による非同期実行 |
 | 入力 | トピック文字列（例: "忍者 × タイムトラベル"） |
-| 出力 | 企画書JSON・Markdown・PNG画像（企画書数ぶん）・stats.json |
+| 出力 | 企画書JSON・Markdown・PNG画像（企画書数ぶん）・stats.json・evaluation.json（オプション） |
 
 ---
 
@@ -83,6 +83,13 @@
   pitch_2/...
   pitch_N/...
   stats.json
+        │
+        ▼ (オプション: evaluate コマンド or --evaluate フラグ)
+┌───────────────────────────────────────────────────────┐
+│  ⑭PitchEvaluatorAgent     →  pitch_evaluation_output │
+│  (各 pitch.json に対して個別実行)                      │
+│  → pitch_N/evaluation.json として保存                  │
+└───────────────────────────────────────────────────────┘
 ```
 
 ### 2.2 Session State を介したデータ受け渡し
@@ -500,6 +507,42 @@ CritiqueFeedback: `idea_id`, `concept_mechanic_alignment`, `game_cycle_concreten
       "art_style_notes": "string"
     }
   ]
+}
+```
+
+---
+
+### Agent ⑭ PitchEvaluatorAgent（オプション・事後評価）
+
+| 項目 | 内容 |
+|------|------|
+| ファイルパス | `src/game_pitch_agent/agents/pitch_evaluator.py` |
+| クラス | `LlmAgent` |
+| 役割 | 生成済みの企画書を17軸（各0〜10点）で事後評価する |
+| 使用ツール | なし |
+| 入力キー | `pitch_data`（pitch.json全体）、`evaluation_topic`（トピック） |
+| 出力キー | `pitch_evaluation_output` |
+| 実行位置 | `evaluate` サブコマンドまたは `full --evaluate` フラグで個別実行 |
+
+**プロンプトの核心部分:**
+- ベテランゲーム批評家の人格設定（30年以上の業界経験）
+- 17軸それぞれに10点/5点/1点の具体的採点基準を明示
+- 0.5点刻みの厳格な採点を要求
+- 企画書に記載のない要素は低評価するルール
+
+**評価17軸:**
+concept_novelty, core_mechanic_novelty, mechanic_intuitiveness, feasibility, theme_concept_relevance, theme_art_style_relevance, theme_core_mechanic_relevance, concept_uniqueness, core_mechanic_uniqueness, hook_strength, art_style_concept_coherence, concept_mechanic_coherence, mechanic_art_style_coherence, narrative_mechanic_integration, game_feel, risk_reward_depth, overall_fun
+
+**出力スキーマ（PitchEvaluation）:**
+```json
+{
+  "idea_id": "string",
+  "title": "string",
+  "topic": "string",
+  "concept_novelty": 0.0,
+  "core_mechanic_novelty": 0.0,
+  "...": "（17軸すべて 0.0〜10.0）",
+  "summary": "string（総合評価コメント）"
 }
 ```
 

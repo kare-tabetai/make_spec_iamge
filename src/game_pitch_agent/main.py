@@ -13,7 +13,7 @@ from zoneinfo import ZoneInfo
 from dotenv import load_dotenv
 
 from .config import AppConfig, load_config
-from .pipeline import run_pipeline, run_image_prompt_for_pitch, setup_logging, setup_output_directory, extract_json_from_state
+from .pipeline import run_pipeline, run_image_prompt_for_pitch, run_pitch_evaluation, setup_logging, setup_output_directory, extract_json_from_state
 from .tools.image_gen import generate_pitch_image
 from .tools.pptx_render import render_pitch_pptx
 from .tools.pptx_convert import convert_pptx
@@ -680,7 +680,135 @@ async def async_full(args: argparse.Namespace) -> int:
     _log_summary(saved_files, output_dir, skip_image=skip_image, render_format=render_format)
     _save_and_log_stats(results.get("stats", {}), output_dir)
 
+    # --evaluate 指定時は評価を実行
+    if getattr(args, "evaluate", False):
+        logger.info("\n企画書評価を実行中...")
+        eval_result = await _run_evaluate_on_dir(output_dir, topic, config)
+        if eval_result != 0:
+            logger.warning("企画書評価でエラーが発生しました")
+
     return 0
+
+
+async def _run_evaluate_on_dir(
+    output_dir: Path,
+    topic: str,
+    config: "AppConfig",
+    force: bool = False,
+) -> int:
+    """指定ディレクトリ内の全ピッチを評価する共通処理"""
+    pitch_dirs = sorted(output_dir.glob("pitch_*"))
+    if not pitch_dirs:
+        logger.error(f"企画書ディレクトリが見つかりません: {output_dir}/pitch_*")
+        return 1
+
+    all_scores: list[dict] = []
+
+    for pitch_dir in pitch_dirs:
+        json_path = pitch_dir / "pitch.json"
+        if not json_path.exists():
+            logger.warning(f"pitch.json が見つかりません: {json_path}")
+            continue
+
+        eval_path = pitch_dir / "evaluation.json"
+        if eval_path.exists() and not force:
+            logger.info(f"スキップ（評価済み）: {pitch_dir.name}")
+            with open(eval_path, "r", encoding="utf-8") as f:
+                all_scores.append(json.load(f))
+            continue
+
+        with open(json_path, "r", encoding="utf-8") as f:
+            pitch_data = json.load(f)
+
+        title = pitch_data.get("pitch", {}).get("title", pitch_data.get("title", "無題"))
+        logger.info(f"\n--- 評価中: {title} ({pitch_dir.name}) ---")
+
+        result = await run_pitch_evaluation(pitch_data, topic, config)
+        if result:
+            with open(eval_path, "w", encoding="utf-8") as f:
+                json.dump(result, f, ensure_ascii=False, indent=2)
+            logger.info(f"評価結果保存: {eval_path}")
+            all_scores.append(result)
+        else:
+            logger.warning(f"評価失敗: {title}")
+
+    # サマリーログ
+    if all_scores:
+        _log_evaluation_summary(all_scores)
+
+    return 0
+
+
+def _log_evaluation_summary(scores: list[dict]) -> None:
+    """全ピッチの評価スコアサマリーをログ出力"""
+    score_fields = [
+        "concept_novelty", "core_mechanic_novelty", "mechanic_intuitiveness",
+        "feasibility", "theme_concept_relevance", "theme_art_style_relevance",
+        "theme_core_mechanic_relevance", "concept_uniqueness", "core_mechanic_uniqueness",
+        "hook_strength", "art_style_concept_coherence", "concept_mechanic_coherence",
+        "mechanic_art_style_coherence", "narrative_mechanic_integration",
+        "game_feel", "risk_reward_depth", "overall_fun",
+    ]
+
+    logger.info("\n" + "=" * 60)
+    logger.info("企画書評価サマリー")
+    logger.info("=" * 60)
+
+    for score in scores:
+        title = score.get("title", "無題")
+        vals = [score.get(f, 0) for f in score_fields]
+        avg = sum(vals) / len(vals) if vals else 0
+        overall = score.get("overall_fun", 0)
+        logger.info(f"  {title}: 平均={avg:.1f}, overall_fun={overall}")
+
+    # 全体平均
+    all_vals = []
+    for score in scores:
+        all_vals.extend(score.get(f, 0) for f in score_fields)
+    grand_avg = sum(all_vals) / len(all_vals) if all_vals else 0
+    logger.info(f"  全体平均: {grand_avg:.1f}")
+    logger.info("=" * 60)
+
+
+async def async_evaluate(args: argparse.Namespace) -> int:
+    """evaluate サブコマンド: 既存の企画書を17軸で評価"""
+    if not os.environ.get("GOOGLE_API_KEY"):
+        logger.error("GOOGLE_API_KEY 環境変数が設定されていません")
+        return 1
+
+    output_dir = Path(args.dir)
+    if not output_dir.exists():
+        logger.error(f"出力ディレクトリが見つかりません: {output_dir}")
+        return 1
+
+    config = _load_config_for_render(args, output_dir)
+    setup_logging(output_dir)
+
+    # トピック取得: CLI引数 > request_info.json
+    topic = getattr(args, "topic", None)
+    if not topic:
+        request_info_path = output_dir / "request_info.json"
+        if request_info_path.exists():
+            with open(request_info_path, "r", encoding="utf-8") as f:
+                request_info = json.load(f)
+            topic = request_info.get("topic")
+
+    if not topic:
+        logger.error("トピックが指定されていません。--topic を指定するか、request_info.json のあるディレクトリを指定してください")
+        return 1
+
+    force = getattr(args, "force", False)
+
+    logger.info("=" * 60)
+    logger.info("ゲーム企画書生成AIエージェントシステム [evaluate]")
+    logger.info(f"  対象ディレクトリ: {output_dir}")
+    logger.info(f"  トピック: {topic}")
+    logger.info(f"  モード: {config.mode}")
+    logger.info(f"  推論モデル: {config.inference_model}")
+    logger.info(f"  強制再評価: {force}")
+    logger.info("=" * 60)
+
+    return await _run_evaluate_on_dir(output_dir, topic, config, force=force)
 
 
 def _save_and_log_stats(stats: dict, output_dir: Path) -> None:
@@ -727,6 +855,9 @@ def main() -> None:
 
   # フルパイプライン（画像スキップ）
   uv run game-pitch full --topic "お題:「不自由」" --no-image
+
+  # 既存の出力を評価
+  uv run game-pitch evaluate --dir output/20260301_120000_xxx
         """,
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -770,6 +901,19 @@ def main() -> None:
     full_parser.add_argument("--no-image", action="store_true", help="画像生成をスキップ")
     full_parser.add_argument("--config", default=None, help="設定ファイルのパス")
     full_parser.add_argument("--search-engine", choices=["ddg", "google"], default="ddg", help="検索エンジン (default: ddg)")
+    full_parser.add_argument("--evaluate", action="store_true", help="生成後に企画書を自動評価")
+
+    # --- evaluate サブコマンド ---
+    eval_parser = subparsers.add_parser(
+        "evaluate",
+        help="既存の企画書を17軸で評価",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    eval_parser.add_argument("--dir", required=True, help="対象の出力ディレクトリ")
+    eval_parser.add_argument("--topic", default=None, help="評価トピック（省略時はrequest_info.jsonから取得）")
+    eval_parser.add_argument("--mode", choices=["test", "prod"], default=None, help="実行モード")
+    eval_parser.add_argument("--force", action="store_true", help="既存evaluation.jsonを上書き")
+    eval_parser.add_argument("--config", default=None, help="設定ファイルのパス")
 
     args = parser.parse_args()
 
@@ -777,6 +921,7 @@ def main() -> None:
         "generate": async_generate,
         "render": async_render,
         "full": async_full,
+        "evaluate": async_evaluate,
     }
     handler = handlers[args.command]
     exit_code = asyncio.run(handler(args))

@@ -41,6 +41,9 @@
     │
     ▼
 出力: Markdown / JSON / PNG画像 / stats.json
+    │
+    ▼ (オプション: evaluate コマンド or full --evaluate)
+[14] PitchEvaluatorAgent    ← 17軸事後評価 → evaluation.json
 ```
 
 ## 出力サンプル
@@ -71,7 +74,8 @@ output/
     │   ├── pitch_image.png # 企画書ビジュアル画像（--format image時）
     │   ├── pitch.pptx      # PowerPoint企画書（--format pptx時）
     │   ├── pitch.pdf       # PDF版（PPTX出力時に自動生成、要LibreOffice）
-    │   └── pitch.png       # PNGプレビュー（PPTX出力時に自動生成、要pdftoppm）
+    │   ├── pitch.png       # PNGプレビュー（PPTX出力時に自動生成、要pdftoppm）
+    │   └── evaluation.json # 17軸評価結果（evaluate実行時）
     └── pitch_2/
 ```
 
@@ -153,6 +157,27 @@ uv run game-pitch full --topic "お題:「不自由」" --mode prod --language e
 
 # 画像生成をスキップ（generateと同等の結果）
 uv run game-pitch full --topic "お題:「不自由」" --no-image
+
+# フルパイプライン実行後に自動評価
+uv run game-pitch full --topic "お題:「不自由」" --no-image --evaluate
+```
+
+### `evaluate` — 既存の企画書を17軸で評価
+
+生成済みの企画書に対して、17軸（各0〜10点）で自動評価を行い、`evaluation.json` を各ピッチフォルダに保存します。
+
+```bash
+# 既存の出力ディレクトリを指定して評価
+uv run game-pitch evaluate --dir output/20260306_224547_xxx
+
+# トピックを明示的に指定
+uv run game-pitch evaluate --dir output/20260306_224547_xxx --topic "お題:「不自由」"
+
+# テストモードで評価（軽量モデル使用）
+uv run game-pitch evaluate --dir output/20260306_224547_xxx --mode test
+
+# 既存の評価結果を上書き
+uv run game-pitch evaluate --dir output/20260306_224547_xxx --force
 ```
 
 ### サブコマンド別オプション一覧
@@ -190,6 +215,17 @@ uv run game-pitch full --topic "お題:「不自由」" --no-image
 | `--no-image` | 画像生成をスキップ | `false` |
 | `--config` | 設定ファイルのパス | プロジェクトルートの `config.yaml` |
 | `--search-engine` | 検索エンジン `ddg` / `google` | `ddg` |
+| `--evaluate` | 生成後に企画書を自動評価 | `false` |
+
+#### `evaluate` オプション
+
+| オプション | 説明 | デフォルト |
+|-----------|------|-----------|
+| `--dir` | 対象の出力ディレクトリ（必須） | - |
+| `--topic` | 評価トピック | `request_info.json` の値 |
+| `--mode` | 実行モード `test` / `prod` | `request_info.json` の値 |
+| `--force` | 既存 `evaluation.json` を上書き | `false` |
+| `--config` | 設定ファイルのパス | プロジェクトルートの `config.yaml` |
 
 ## 設定ファイル
 
@@ -231,7 +267,8 @@ game-pitch-agent/
 │   │   ├── evaluation.py     # アイデア評価・選定エージェント
 │   │   ├── expansion.py      # 企画書展開エージェント
 │   │   ├── critique.py       # 品質批評エージェント（リファインループ）
-│   │   └── image_prompt.py   # 画像プロンプト生成エージェント
+│   │   ├── image_prompt.py   # 画像プロンプト生成エージェント
+│   │   └── pitch_evaluator.py # 企画書事後評価エージェント（17軸採点）
 │   ├── schemas/
 │   │   └── models.py         # Pydantic スキーマ定義
 │   ├── tools/
@@ -268,6 +305,7 @@ game-pitch-agent/
 
 | バージョン | 日付 | 内容 |
 |-----------|------|------|
+| 0.8.0 | 2026-03-06 | 企画書評価AIエージェント追加: `evaluate` サブコマンドで生成済み企画書を17軸（各0〜10点）で自動評価。`full --evaluate` フラグで生成後に自動評価も可能。PitchEvaluatorAgent / PitchEvaluation スキーマ / evaluation.json 出力 ([Steering](Docs/Steering/202603070320_add-pitch-evaluator.md)) |
 | 0.7.0 | 2026-03-06 | 企画書の面白さ・多様性向上: (1)CoreIdeaAgentでcross_connections活用 (2)ExpansionAgentにFew-shot例示追加 (3)新フィールド5種追加(play_scene/elevator_pitch/emotional_curve/target_player/camera_perspective) (4)Markdown出力をテーブル+フローチャート形式に刷新 (5)PPTX出力に新フィールド反映 (6)ランダム制約カードによるブレスト多様性強化 ([Steering](Docs/Steering/202603062330_improve-pitch-quality-diversity.md)) |
 | 0.6.0 | 2026-03-06 | 12項目改善: CritiqueAgent+リファインループ新設、マンダラート2段階展開、Google検索オプション化(`--search-engine`)、温度設定個別チューニング、ゲームサイクル構造深化(trigger/escalation)、不満点調査追加、品質フィルタリング強化、画像生成リトライ機構、トークン統計出力(stats.json)、JSON検証ミドルウェア、ImagePromptバランス精密化、ゲーム画面モックアップ指示追加 ([Steering](Docs/Steering/improvement-12items-202603060330.md)) |
 | 0.5.1 | 2026-03-06 | PPTX→PDF変換の日本語パス問題を修正: 一時ディレクトリ経由で変換することでLibreOfficeの非ASCIIパス問題を回避 ([Steering](Docs/Steering/fix-pptx-pdf-japanese-path-20260306.md)) |
