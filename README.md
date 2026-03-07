@@ -305,6 +305,7 @@ game-pitch-agent/
 
 | バージョン | 日付 | 内容 |
 |-----------|------|------|
+| 0.9.2 | 2026-03-07 | PitchEvaluatorAgentデータフロー修正: ユーザーメッセージにpitchデータを直接埋め込み、evaluation.jsonのタイトル・IDがpitch.jsonと不一致になるハルシネーション問題を解消 ([Steering](Docs/Steering/202603070645_fix-evaluator-dataflow.md)) |
 | 0.9.1 | 2026-03-07 | 評価分析テスト: 8テーマ×16軸の横断分析を実施。ExpansionAgent出力パースのバグ修正(`_extract_pitches`関数追加) ([Steering](Docs/Steering/202603070400_evaluation-analysis.md)) |
 | 0.9.0 | 2026-03-07 | 評価軸改善（17軸→16軸）: 冗長軸削除(concept_uniqueness/core_mechanic_uniqueness)、新軸追加(game_cycle_quality/elevator_pitch_clarity)、軸改名・統合(hook_strength→first_impression_hook, narrative_mechanic_integration→thematic_mechanic_unity, theme_core_mechanic_relevance+concept_mechanic_coherence→design_coherence) ([Steering](Docs/Steering/202603070400_improve-evaluation-axes.md)) |
 | 0.8.0 | 2026-03-06 | 企画書評価AIエージェント追加: `evaluate` サブコマンドで生成済み企画書を16軸（各0〜10点）で自動評価。`full --evaluate` フラグで生成後に自動評価も可能。PitchEvaluatorAgent / PitchEvaluation スキーマ / evaluation.json 出力 ([Steering](Docs/Steering/202603070320_add-pitch-evaluator.md)) |

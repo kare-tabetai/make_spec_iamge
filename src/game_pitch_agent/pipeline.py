@@ -598,9 +598,14 @@ async def run_pitch_evaluation(pitch_data: dict, topic: str, config: AppConfig) 
         state=initial_state,
     )
 
+    pitch_json_str = json.dumps(pitch_data, ensure_ascii=False, indent=2)
     message = genai_types.Content(
         role="user",
-        parts=[genai_types.Part(text="この企画書を評価してください")],
+        parts=[
+            genai_types.Part(
+                text=f"以下の企画書を評価してください。\n\n## 評価トピック\n{topic}\n\n## 企画書データ\n{pitch_json_str}"
+            )
+        ],
     )
 
     async for event in runner.run_async(
