@@ -744,9 +744,10 @@ def _log_evaluation_summary(scores: list[dict]) -> None:
     score_fields = [
         "concept_novelty", "core_mechanic_novelty", "mechanic_intuitiveness",
         "feasibility", "theme_concept_relevance", "theme_art_style_relevance",
-        "theme_core_mechanic_relevance", "concept_uniqueness", "core_mechanic_uniqueness",
-        "hook_strength", "art_style_concept_coherence", "concept_mechanic_coherence",
-        "mechanic_art_style_coherence", "narrative_mechanic_integration",
+        "design_coherence", "art_style_concept_coherence",
+        "mechanic_art_style_coherence", "first_impression_hook",
+        "elevator_pitch_clarity", "game_cycle_quality",
+        "thematic_mechanic_unity",
         "game_feel", "risk_reward_depth", "overall_fun",
     ]
 
@@ -771,7 +772,7 @@ def _log_evaluation_summary(scores: list[dict]) -> None:
 
 
 async def async_evaluate(args: argparse.Namespace) -> int:
-    """evaluate サブコマンド: 既存の企画書を17軸で評価"""
+    """evaluate サブコマンド: 既存の企画書を16軸で評価"""
     if not os.environ.get("GOOGLE_API_KEY"):
         logger.error("GOOGLE_API_KEY 環境変数が設定されていません")
         return 1
@@ -906,7 +907,7 @@ def main() -> None:
     # --- evaluate サブコマンド ---
     eval_parser = subparsers.add_parser(
         "evaluate",
-        help="既存の企画書を17軸で評価",
+        help="既存の企画書を16軸で評価",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     eval_parser.add_argument("--dir", required=True, help="対象の出力ディレクトリ")

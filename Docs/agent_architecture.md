@@ -518,7 +518,7 @@ CritiqueFeedback: `idea_id`, `concept_mechanic_alignment`, `game_cycle_concreten
 |------|------|
 | ファイルパス | `src/game_pitch_agent/agents/pitch_evaluator.py` |
 | クラス | `LlmAgent` |
-| 役割 | 生成済みの企画書を17軸（各0〜10点）で事後評価する |
+| 役割 | 生成済みの企画書を16軸（各0〜10点）で事後評価する |
 | 使用ツール | なし |
 | 入力キー | `pitch_data`（pitch.json全体）、`evaluation_topic`（トピック） |
 | 出力キー | `pitch_evaluation_output` |
@@ -526,12 +526,12 @@ CritiqueFeedback: `idea_id`, `concept_mechanic_alignment`, `game_cycle_concreten
 
 **プロンプトの核心部分:**
 - ベテランゲーム批評家の人格設定（30年以上の業界経験）
-- 17軸それぞれに10点/5点/1点の具体的採点基準を明示
+- 16軸それぞれに10点/5点/1点の具体的採点基準を明示
 - 0.5点刻みの厳格な採点を要求
 - 企画書に記載のない要素は低評価するルール
 
-**評価17軸:**
-concept_novelty, core_mechanic_novelty, mechanic_intuitiveness, feasibility, theme_concept_relevance, theme_art_style_relevance, theme_core_mechanic_relevance, concept_uniqueness, core_mechanic_uniqueness, hook_strength, art_style_concept_coherence, concept_mechanic_coherence, mechanic_art_style_coherence, narrative_mechanic_integration, game_feel, risk_reward_depth, overall_fun
+**評価16軸:**
+concept_novelty, core_mechanic_novelty, mechanic_intuitiveness, feasibility, theme_concept_relevance, theme_art_style_relevance, design_coherence, art_style_concept_coherence, mechanic_art_style_coherence, first_impression_hook, elevator_pitch_clarity, game_cycle_quality, thematic_mechanic_unity, game_feel, risk_reward_depth, overall_fun
 
 **出力スキーマ（PitchEvaluation）:**
 ```json
@@ -541,7 +541,7 @@ concept_novelty, core_mechanic_novelty, mechanic_intuitiveness, feasibility, the
   "topic": "string",
   "concept_novelty": 0.0,
   "core_mechanic_novelty": 0.0,
-  "...": "（17軸すべて 0.0〜10.0）",
+  "...": "（16軸すべて 0.0〜10.0）",
   "summary": "string（総合評価コメント）"
 }
 ```
