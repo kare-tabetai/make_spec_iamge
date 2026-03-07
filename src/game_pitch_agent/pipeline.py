@@ -459,9 +459,11 @@ async def _run_single_agent(
         state=dict(current_state),
     )
 
+    topic = current_state.get("topic", "")
+    msg_text = f"ゲームトピック「{topic}」について続行してください" if topic else "続行してください"
     message = genai_types.Content(
         role="user",
-        parts=[genai_types.Part(text="続行してください")],
+        parts=[genai_types.Part(text=msg_text)],
     )
 
     async for event in runner.run_async(

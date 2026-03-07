@@ -104,8 +104,9 @@ class IdeaScore(BaseModel):
     clarity: float = Field(..., ge=0, le=10, description="明確さ・わかりやすさ (0-10)")
     fun_factor: float = Field(..., ge=0, le=10, description="ぱっと見て面白そうか (0-10)")
     feasibility: float = Field(..., ge=0, le=10, description="実現可能性 (0-10)")
-    total_score: float = Field(..., ge=0, le=40, description="合計スコア (0-40)")
-    weighted_score: float = Field(..., ge=0, le=10, description="重み付きスコア (斬新さ×0.4+明確さ×0.2+面白さ×0.2+実現可能性×0.2)")
+    topic_relevance: float = Field(..., ge=0, le=10, description="テーマ関連度 (0-10)")
+    total_score: float = Field(..., ge=0, le=50, description="合計スコア (0-50)")
+    weighted_score: float = Field(..., ge=0, le=10, description="重み付きスコア (斬新さ×0.35+明確さ×0.2+面白さ×0.2+実現可能性×0.1+テーマ関連度×0.15)")
     core_experience_axes: CoreExperienceAxes = Field(..., description="コア体験の4軸分類")
     evaluation_comment: str = Field(..., description="プロのゲームデザイナー視点の評価コメント")
     selected: bool = Field(default=False, description="最終選定されたか")
@@ -190,7 +191,8 @@ class CritiqueFeedback(BaseModel):
     game_cycle_concreteness: float = Field(..., ge=1, le=10, description="ゲームサイクルの具体性 (1-10)")
     catchcopy_originality: float = Field(..., ge=1, le=10, description="キャッチコピーの独自性 (1-10)")
     usp_differentiation: float = Field(..., ge=1, le=10, description="USPの差別化力 (1-10)")
-    overall_score: float = Field(..., ge=1, le=10, description="総合スコア (4軸の平均)")
+    topic_relevance: float = Field(..., ge=1, le=10, description="トピック関連度 (1-10)")
+    overall_score: float = Field(..., ge=1, le=10, description="総合スコア (5軸の平均)")
     feedback: str = Field(..., description="具体的な改善点")
 
 

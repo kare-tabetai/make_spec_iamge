@@ -305,6 +305,7 @@ game-pitch-agent/
 
 | バージョン | 日付 | 内容 |
 |-----------|------|------|
+| 0.9.3 | 2026-03-08 | トピック不一致問題修正: パイプライン全体でトピックが失われていた問題を解消。ExpansionAgent/MergeAgent/CritiqueAgent/EvaluationAgent/CoreIdeaAgentにトピック意識を追加、CritiqueとEvaluationに`topic_relevance`評価軸を新設、`_run_single_agent`のユーザーメッセージにtopicを含めるよう修正。theme_concept_relevanceが1.0→3.0〜9.0に大幅改善 ([Steering](Docs/Steering/202603080240_fix-topic-relevance-pipeline.md)) |
 | 0.9.2 | 2026-03-07 | PitchEvaluatorAgentデータフロー修正: ユーザーメッセージにpitchデータを直接埋め込み、evaluation.jsonのタイトル・IDがpitch.jsonと不一致になるハルシネーション問題を解消 ([Steering](Docs/Steering/202603070645_fix-evaluator-dataflow.md)) |
 | 0.9.1 | 2026-03-07 | 評価分析テスト: 8テーマ×16軸の横断分析を実施。ExpansionAgent出力パースのバグ修正(`_extract_pitches`関数追加) ([Steering](Docs/Steering/202603070400_evaluation-analysis.md)) |
 | 0.9.0 | 2026-03-07 | 評価軸改善（17軸→16軸）: 冗長軸削除(concept_uniqueness/core_mechanic_uniqueness)、新軸追加(game_cycle_quality/elevator_pitch_clarity)、軸改名・統合(hook_strength→first_impression_hook, narrative_mechanic_integration→thematic_mechanic_unity, theme_core_mechanic_relevance+concept_mechanic_coherence→design_coherence) ([Steering](Docs/Steering/202603070400_improve-evaluation-axes.md)) |
