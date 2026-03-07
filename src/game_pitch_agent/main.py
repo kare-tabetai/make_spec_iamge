@@ -261,6 +261,23 @@ def render_pitch_pptx_file(pitch_dir: Path, pitch: dict, image_path: str | None 
     return {"pptx_path": pptx_path_str, "pdf_path": pdf_path, "png_path": png_path}
 
 
+def _extract_pitches(expanded_output: dict | list) -> list[dict]:
+    """expanded_ideas_output から企画書リストを抽出する。
+
+    LLMが {"pitches": [...]} / 単一オブジェクト / リスト形式で返すケースに対応。
+    """
+    if isinstance(expanded_output, list):
+        return expanded_output
+    if isinstance(expanded_output, dict):
+        pitches = expanded_output.get("pitches")
+        if isinstance(pitches, list):
+            return pitches
+        # pitchesキーがない場合は単一オブジェクトとして扱う
+        if "title" in expanded_output or "id" in expanded_output:
+            return [expanded_output]
+    return []
+
+
 def save_pitch_files(
     pitch_dir: Path,
     pitch: dict,
@@ -439,7 +456,7 @@ async def async_generate(args: argparse.Namespace) -> int:
         logger.error("企画書の展開結果が取得できませんでした")
         return 1
 
-    pitches = expanded_output.get("pitches", [])
+    pitches = _extract_pitches(expanded_output)
     logger.info(f"\n企画書を {len(pitches)} 件保存します...")
 
     saved_files = []
@@ -651,7 +668,7 @@ async def async_full(args: argparse.Namespace) -> int:
         logger.error("企画書の展開結果が取得できませんでした")
         return 1
 
-    pitches = expanded_output.get("pitches", [])
+    pitches = _extract_pitches(expanded_output)
     image_prompts = image_prompts_output.get("image_prompts", []) if image_prompts_output else []
 
     # 画像プロンプトをアイデアIDでインデックス化
