@@ -227,6 +227,42 @@ class PitchEvaluation(BaseModel):
     summary: str = Field(..., description="総合評価コメント")
 
 
+# ────────────────────────────────────────────────────────────────
+# OverviewEvaluation - 俯瞰評価
+# ────────────────────────────────────────────────────────────────
+
+class DiversityScores(BaseModel):
+    """全pitch間の多様性スコア"""
+    concept_diversity: float = Field(..., ge=0, le=10, description="コンセプトの多様性")
+    mechanic_diversity: float = Field(..., ge=0, le=10, description="メカニクスの多様性")
+    genre_diversity: float = Field(..., ge=0, le=10, description="ジャンルの多様性")
+    art_style_diversity: float = Field(..., ge=0, le=10, description="アートスタイルの多様性")
+    world_setting_diversity: float = Field(..., ge=0, le=10, description="世界観・設定の多様性")
+    target_player_diversity: float = Field(..., ge=0, le=10, description="ターゲット層の多様性")
+    overall_diversity: float = Field(..., ge=0, le=10, description="全体的な多様性")
+
+
+class PitchRanking(BaseModel):
+    """推薦順位の1エントリ"""
+    rank: int = Field(..., description="順位")
+    idea_id: str = Field(..., description="アイデアID")
+    title: str = Field(..., description="ゲームタイトル")
+    avg_score: float = Field(..., description="16軸評価の平均スコア")
+    overall_fun: float = Field(..., description="overall_funスコア")
+    strengths: str = Field(..., description="この企画の強み（50文字程度）")
+
+
+class OverviewEvaluation(BaseModel):
+    """全pitchを俯瞰した比較評価"""
+    topic: str = Field(..., description="お題名")
+    pitch_count: int = Field(..., description="評価対象のpitch数")
+    generated_at: str = Field(..., description="生成日時（ISO 8601）")
+    axis_averages: dict[str, float] = Field(..., description="16軸の全pitch平均値")
+    diversity_scores: DiversityScores = Field(..., description="多様性スコア")
+    pitch_rankings: list[PitchRanking] = Field(..., description="推薦順位")
+    summary: str = Field(..., description="全体を俯瞰した総合コメント")
+
+
 class PitchDocument(BaseModel):
     """最終的なペラ1企画書ドキュメント"""
     idea_id: str

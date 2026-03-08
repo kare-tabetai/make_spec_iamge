@@ -13,7 +13,7 @@ from zoneinfo import ZoneInfo
 from dotenv import load_dotenv
 
 from .config import AppConfig, load_config
-from .pipeline import run_pipeline, run_image_prompt_for_pitch, run_pitch_evaluation, setup_logging, setup_output_directory, extract_json_from_state
+from .pipeline import run_pipeline, run_image_prompt_for_pitch, run_pitch_evaluation, run_overview_evaluation, setup_logging, setup_output_directory, extract_json_from_state
 from .tools.image_gen import generate_pitch_image
 from .tools.pptx_render import render_pitch_pptx
 from .tools.pptx_convert import convert_pptx
@@ -481,7 +481,8 @@ async def async_generate(args: argparse.Namespace) -> int:
     # デフォルトで評価を実行（--no-evaluate で無効化）
     if not getattr(args, "no_evaluate", False):
         logger.info("\n企画書評価を実行中...")
-        eval_result = await _run_evaluate_on_dir(output_dir, topic, config)
+        no_overview = getattr(args, "no_overview", False)
+        eval_result = await _run_evaluate_on_dir(output_dir, topic, config, no_overview=no_overview)
         if eval_result != 0:
             logger.warning("企画書評価でエラーが発生しました")
 
@@ -707,7 +708,8 @@ async def async_full(args: argparse.Namespace) -> int:
     # デフォルトで評価を実行（--no-evaluate で無効化）
     if not getattr(args, "no_evaluate", False):
         logger.info("\n企画書評価を実行中...")
-        eval_result = await _run_evaluate_on_dir(output_dir, topic, config)
+        no_overview = getattr(args, "no_overview", False)
+        eval_result = await _run_evaluate_on_dir(output_dir, topic, config, no_overview=no_overview)
         if eval_result != 0:
             logger.warning("企画書評価でエラーが発生しました")
 
@@ -719,6 +721,7 @@ async def _run_evaluate_on_dir(
     topic: str,
     config: "AppConfig",
     force: bool = False,
+    no_overview: bool = False,
 ) -> int:
     """指定ディレクトリ内の全ピッチを評価する共通処理"""
     pitch_dirs = sorted(output_dir.glob("pitch_*"))
@@ -727,6 +730,8 @@ async def _run_evaluate_on_dir(
         return 1
 
     all_scores: list[dict] = []
+    all_pitch_data: list[dict] = []
+    all_pitch_md: list[str] = []
 
     for pitch_dir in pitch_dirs:
         json_path = pitch_dir / "pitch.json"
@@ -734,15 +739,23 @@ async def _run_evaluate_on_dir(
             logger.warning(f"pitch.json が見つかりません: {json_path}")
             continue
 
+        with open(json_path, "r", encoding="utf-8") as f:
+            pitch_data = json.load(f)
+
         eval_path = pitch_dir / "evaluation.json"
         if eval_path.exists() and not force:
             logger.info(f"スキップ（評価済み）: {pitch_dir.name}")
             with open(eval_path, "r", encoding="utf-8") as f:
                 all_scores.append(json.load(f))
+            all_pitch_data.append(pitch_data)
+            # マークダウン読み込み
+            md_path = pitch_dir / "pitch.md"
+            if md_path.exists():
+                with open(md_path, "r", encoding="utf-8") as f:
+                    all_pitch_md.append(f.read())
+            else:
+                all_pitch_md.append("")
             continue
-
-        with open(json_path, "r", encoding="utf-8") as f:
-            pitch_data = json.load(f)
 
         title = pitch_data.get("pitch", {}).get("title", pitch_data.get("title", "無題"))
         logger.info(f"\n--- 評価中: {title} ({pitch_dir.name}) ---")
@@ -753,12 +766,44 @@ async def _run_evaluate_on_dir(
                 json.dump(result, f, ensure_ascii=False, indent=2)
             logger.info(f"評価結果保存: {eval_path}")
             all_scores.append(result)
+            all_pitch_data.append(pitch_data)
+            # マークダウン読み込み
+            md_path = pitch_dir / "pitch.md"
+            if md_path.exists():
+                with open(md_path, "r", encoding="utf-8") as f:
+                    all_pitch_md.append(f.read())
+            else:
+                all_pitch_md.append("")
         else:
             logger.warning(f"評価失敗: {title}")
 
     # サマリーログ
     if all_scores:
         _log_evaluation_summary(all_scores)
+
+    # 俯瞰評価
+    if not no_overview and len(all_scores) >= 2:
+        overview_path = output_dir / "overview_evaluation.json"
+        if overview_path.exists() and not force:
+            logger.info("スキップ（俯瞰評価済み）: overview_evaluation.json")
+        else:
+            logger.info("\n俯瞰評価を実行中...")
+            overview_result = await run_overview_evaluation(
+                pitch_md_list=all_pitch_md,
+                evaluation_list=all_scores,
+                pitch_data_list=all_pitch_data,
+                topic=topic,
+                config=config,
+            )
+            if overview_result:
+                with open(overview_path, "w", encoding="utf-8") as f:
+                    json.dump(overview_result, f, ensure_ascii=False, indent=2)
+                logger.info(f"俯瞰評価結果保存: {overview_path}")
+                _log_overview_summary(overview_result)
+            else:
+                logger.warning("俯瞰評価に失敗しました")
+    elif not no_overview and len(all_scores) < 2:
+        logger.info("俯瞰評価スキップ: 比較対象のpitchが2件未満です")
 
     return 0
 
@@ -792,6 +837,36 @@ def _log_evaluation_summary(scores: list[dict]) -> None:
         all_vals.extend(score.get(f, 0) for f in score_fields)
     grand_avg = sum(all_vals) / len(all_vals) if all_vals else 0
     logger.info(f"  全体平均: {grand_avg:.1f}")
+    logger.info("=" * 60)
+
+
+def _log_overview_summary(overview: dict) -> None:
+    """俯瞰評価のサマリーをログ出力"""
+    logger.info("\n" + "=" * 60)
+    logger.info("俯瞰評価サマリー")
+    logger.info("=" * 60)
+
+    # 多様性スコア
+    diversity = overview.get("diversity_scores", {})
+    if diversity:
+        logger.info("  多様性スコア:")
+        for key, val in diversity.items():
+            logger.info(f"    {key}: {val}")
+
+    # ランキング
+    rankings = overview.get("pitch_rankings", [])
+    if rankings:
+        logger.info("  推薦順位:")
+        for r in rankings:
+            logger.info(f"    #{r.get('rank', '?')} {r.get('title', '無題')} "
+                         f"(avg={r.get('avg_score', 0):.1f}, fun={r.get('overall_fun', 0):.1f})")
+            logger.info(f"       強み: {r.get('strengths', '')}")
+
+    # 総合コメント
+    summary = overview.get("summary", "")
+    if summary:
+        logger.info(f"  総合コメント: {summary}")
+
     logger.info("=" * 60)
 
 
@@ -833,7 +908,8 @@ async def async_evaluate(args: argparse.Namespace) -> int:
     logger.info(f"  強制再評価: {force}")
     logger.info("=" * 60)
 
-    return await _run_evaluate_on_dir(output_dir, topic, config, force=force)
+    no_overview = getattr(args, "no_overview", False)
+    return await _run_evaluate_on_dir(output_dir, topic, config, force=force, no_overview=no_overview)
 
 
 def _save_and_log_stats(stats: dict, output_dir: Path) -> None:
@@ -889,6 +965,9 @@ def main() -> None:
 
   # 既存の出力を評価
   uv run game-pitch evaluate --dir output/20260301_120000_xxx
+
+  # 俯瞰評価をスキップ
+  uv run game-pitch generate --topic "お題:「不自由」" --no-overview
         """,
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -905,6 +984,7 @@ def main() -> None:
     gen_parser.add_argument("--config", default=None, help="設定ファイルのパス")
     gen_parser.add_argument("--search-engine", choices=["ddg", "google"], default="ddg", help="検索エンジン (default: ddg)")
     gen_parser.add_argument("--no-evaluate", action="store_true", help="16軸評価をスキップ")
+    gen_parser.add_argument("--no-overview", action="store_true", help="俯瞰評価をスキップ")
 
     # --- render サブコマンド ---
     render_parser = subparsers.add_parser(
@@ -934,6 +1014,7 @@ def main() -> None:
     full_parser.add_argument("--config", default=None, help="設定ファイルのパス")
     full_parser.add_argument("--search-engine", choices=["ddg", "google"], default="ddg", help="検索エンジン (default: ddg)")
     full_parser.add_argument("--no-evaluate", action="store_true", help="16軸評価をスキップ")
+    full_parser.add_argument("--no-overview", action="store_true", help="俯瞰評価をスキップ")
 
     # --- evaluate サブコマンド ---
     eval_parser = subparsers.add_parser(
@@ -946,6 +1027,7 @@ def main() -> None:
     eval_parser.add_argument("--mode", choices=["test", "prod"], default=None, help="実行モード")
     eval_parser.add_argument("--force", action="store_true", help="既存evaluation.jsonを上書き")
     eval_parser.add_argument("--config", default=None, help="設定ファイルのパス")
+    eval_parser.add_argument("--no-overview", action="store_true", help="俯瞰評価をスキップ")
 
     args = parser.parse_args()
 

@@ -6,6 +6,7 @@ from .expansion import create_expansion_agent
 from .image_prompt import create_image_prompt_agent
 from .critique import create_critique_agent
 from .pitch_evaluator import create_pitch_evaluator_agent
+from .overview_evaluator import create_overview_evaluator_agent
 
 __all__ = [
     "create_google_research_agent",
@@ -17,4 +18,5 @@ __all__ = [
     "create_image_prompt_agent",
     "create_critique_agent",
     "create_pitch_evaluator_agent",
+    "create_overview_evaluator_agent",
 ]

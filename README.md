@@ -49,6 +49,13 @@
     ├── PlayabilityEvalAgent   ← プレイアビリティ4軸（プレイテスター）
     ├── PresentationEvalAgent  ← プレゼンテーション2軸（マーケティングディレクター）
     └── EvalMergeAgent         ← overall_fun + summary 統合
+    │
+    ▼ (2件以上のpitchがある場合 / --no-overview でスキップ)
+[15] OverviewEvaluatorAgent   ← 俯瞰比較評価 → overview_evaluation.json
+    ├── axis_averages           ← Python側で16軸平均を算出
+    ├── diversity_scores        ← LLMが7カテゴリの多様性を評価
+    ├── pitch_rankings          ← LLMが推薦順位を判定
+    └── summary                 ← LLMが俯瞰コメントを生成
 ```
 
 ## 出力サンプル
@@ -81,7 +88,8 @@ output/
     │   ├── pitch.pdf       # PDF版（PPTX出力時に自動生成、要LibreOffice）
     │   ├── pitch.png       # PNGプレビュー（PPTX出力時に自動生成、要pdftoppm）
     │   └── evaluation.json # 16軸評価結果（evaluate実行時）
-    └── pitch_2/
+    ├── pitch_2/
+    └── overview_evaluation.json # 俯瞰比較評価（2件以上のpitch時に自動生成）
 ```
 
 ## セットアップ
@@ -197,6 +205,7 @@ uv run game-pitch evaluate --dir output/20260306_224547_xxx --force
 | `--config` | 設定ファイルのパス | プロジェクトルートの `config.yaml` |
 | `--search-engine` | 検索エンジン `ddg` / `google` | `ddg` |
 | `--no-evaluate` | 16軸評価をスキップ | `false` |
+| `--no-overview` | 俯瞰評価をスキップ | `false` |
 
 #### `render` オプション
 
@@ -222,6 +231,7 @@ uv run game-pitch evaluate --dir output/20260306_224547_xxx --force
 | `--config` | 設定ファイルのパス | プロジェクトルートの `config.yaml` |
 | `--search-engine` | 検索エンジン `ddg` / `google` | `ddg` |
 | `--no-evaluate` | 16軸評価をスキップ | `false` |
+| `--no-overview` | 俯瞰評価をスキップ | `false` |
 
 #### `evaluate` オプション
 
@@ -232,6 +242,7 @@ uv run game-pitch evaluate --dir output/20260306_224547_xxx --force
 | `--mode` | 実行モード `test` / `prod` | `request_info.json` の値 |
 | `--force` | 既存 `evaluation.json` を上書き | `false` |
 | `--config` | 設定ファイルのパス | プロジェクトルートの `config.yaml` |
+| `--no-overview` | 俯瞰評価をスキップ | `false` |
 
 ## 設定ファイル
 
@@ -274,7 +285,8 @@ game-pitch-agent/
 │   │   ├── expansion.py      # 企画書展開エージェント
 │   │   ├── critique.py       # 品質批評エージェント（リファインループ）
 │   │   ├── image_prompt.py   # 画像プロンプト生成エージェント
-│   │   └── pitch_evaluator.py # 企画書事後評価エージェント（16軸採点）
+│   │   ├── pitch_evaluator.py # 企画書事後評価エージェント（16軸採点）
+│   │   └── overview_evaluator.py # 俯瞰比較評価エージェント
 │   ├── schemas/
 │   │   └── models.py         # Pydantic スキーマ定義
 │   ├── tools/
@@ -311,6 +323,7 @@ game-pitch-agent/
 
 | バージョン | 日付 | 内容 |
 |-----------|------|------|
+| 0.12.0 | 2026-03-08 | 俯瞰評価エージェント追加: 全pitchを俯瞰して比較する`OverviewEvaluatorAgent`を新設。16軸平均値(Python算出)、多様性スコア7カテゴリ(LLM判定)、推薦ランキング、総合コメントを`overview_evaluation.json`に出力。`--no-overview`フラグでスキップ可能 ([Steering](Docs/Steering/202603081500_overview-evaluator.md)) |
 | 0.11.0 | 2026-03-08 | デフォルト評価実行: generate/fullコマンドで16軸評価をデフォルト実行するよう変更。`--evaluate`フラグを`--no-evaluate`に反転（評価スキップ用） ([Steering](Docs/Steering/202603080200_default-evaluate.md)) |
 | 0.10.0 | 2026-03-08 | 評価マルチエージェント化: 単一エージェント一括採点を4専門グループ（Innovation/Coherence/Playability/Presentation）＋マージの SequentialAgent に分割。各グループに専門ペルソナを付与して評価の質を向上 ([Steering](Docs/Steering/202603081218_multi-agent-evaluator.md)) |
 | 0.9.4 | 2026-03-08 | 評価16軸リファレンスドキュメント作成: 16評価軸の採点基準・詳細をドキュメント化、CLAUDE_PJ.mdに評価軸変更時の同期ルールを追記 ([Steering](Docs/Steering/202603080310_evaluation-axes-documentation.md)) |

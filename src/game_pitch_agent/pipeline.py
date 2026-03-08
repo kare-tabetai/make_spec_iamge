@@ -25,6 +25,7 @@ from .agents import (
     create_image_prompt_agent,
     create_critique_agent,
     create_pitch_evaluator_agent,
+    create_overview_evaluator_agent,
 )
 from .config import AppConfig
 from .constraints import generate_constraint_cards
@@ -37,6 +38,7 @@ from .schemas.models import (
     ExpandedIdeasOutput,
     ImagePromptsOutput,
     MandalartOutput,
+    OverviewEvaluation,
     PitchEvaluation,
 )
 
@@ -640,3 +642,135 @@ async def run_pitch_evaluation(pitch_data: dict, topic: str, config: AppConfig) 
         logger.warning("✗ PitchEvaluatorPipeline の結果が取得できませんでした")
 
     return result
+
+
+def _compute_axis_averages(evaluations: list[dict]) -> dict[str, float]:
+    """16軸の全pitch平均値をPython側で算出する"""
+    score_fields = [
+        "concept_novelty", "core_mechanic_novelty", "mechanic_intuitiveness",
+        "feasibility", "theme_concept_relevance", "theme_art_style_relevance",
+        "design_coherence", "art_style_concept_coherence",
+        "mechanic_art_style_coherence", "first_impression_hook",
+        "elevator_pitch_clarity", "game_cycle_quality",
+        "thematic_mechanic_unity", "game_feel", "risk_reward_depth",
+        "overall_fun",
+    ]
+    averages = {}
+    for field in score_fields:
+        values = [e.get(field, 0) for e in evaluations if field in e]
+        averages[field] = round(sum(values) / len(values), 2) if values else 0.0
+    return averages
+
+
+async def run_overview_evaluation(
+    pitch_md_list: list[str],
+    evaluation_list: list[dict],
+    pitch_data_list: list[dict],
+    topic: str,
+    config: AppConfig,
+) -> dict | None:
+    """全pitchを俯瞰して比較評価する。
+
+    axis_averages はPython側で計算し、
+    diversity_scores, pitch_rankings, summary はLLMエージェントが生成する。
+
+    Args:
+        pitch_md_list: 各pitchのマークダウン文字列リスト
+        evaluation_list: 各pitchのevaluation.json内容リスト
+        pitch_data_list: 各pitchのpitch.jsonの内容リスト
+        topic: 評価トピック
+        config: アプリ設定
+
+    Returns:
+        OverviewEvaluation準拠の dict、または None
+    """
+    if not evaluation_list:
+        logger.warning("俯瞰評価: 評価データがありません")
+        return None
+
+    # 1. axis_averages をPythonで計算
+    axis_averages = _compute_axis_averages(evaluation_list)
+
+    # 2. LLMエージェントに全pitch情報を渡す
+    model = config.inference_model
+    agent = create_overview_evaluator_agent(model)
+
+    pipeline = SequentialAgent(
+        name="OverviewEvaluatorOnlyPipeline",
+        sub_agents=[agent],
+    )
+
+    session_service = InMemorySessionService()
+    runner = Runner(
+        agent=pipeline,
+        app_name="game_pitch_agent",
+        session_service=session_service,
+    )
+
+    session = await session_service.create_session(
+        app_name="game_pitch_agent",
+        user_id="user",
+        state={},
+    )
+
+    # ユーザーメッセージに全pitchのマークダウンとevaluation結果を埋め込む
+    parts = [f"## 評価トピック\n{topic}\n\n## 企画書一覧（{len(pitch_md_list)}件）\n"]
+    for i, (md, eval_data, pitch_data) in enumerate(
+        zip(pitch_md_list, evaluation_list, pitch_data_list), 1
+    ):
+        idea_id = pitch_data.get("idea_id", f"idea_{i:03d}")
+        title = pitch_data.get("title", "無題")
+        eval_json = json.dumps(eval_data, ensure_ascii=False, indent=2)
+        parts.append(
+            f"### 企画書 {i}: {title} (ID: {idea_id})\n\n"
+            f"#### マークダウン\n{md}\n\n"
+            f"#### 16軸評価結果\n{eval_json}\n\n---\n"
+        )
+
+    message_text = "\n".join(parts)
+    message = genai_types.Content(
+        role="user",
+        parts=[genai_types.Part(text=message_text)],
+    )
+
+    async for event in runner.run_async(
+        user_id="user",
+        session_id=session.id,
+        new_message=message,
+    ):
+        if event.is_final_response():
+            logger.info("OverviewEvaluatorPipeline 完了")
+
+    final_session = await session_service.get_session(
+        app_name="game_pitch_agent",
+        user_id="user",
+        session_id=session.id,
+    )
+    final_state = final_session.state if final_session else {}
+
+    llm_result = extract_json_from_state(final_state, "overview_evaluation_output")
+    if not llm_result or not isinstance(llm_result, dict):
+        logger.warning("✗ OverviewEvaluatorAgent の結果が取得できませんでした")
+        return None
+
+    # 3. Python計算結果とLLM結果をマージして最終出力を構築
+    now_jst = datetime.now(ZoneInfo("Asia/Tokyo")).isoformat()
+    overview = {
+        "topic": topic,
+        "pitch_count": len(pitch_md_list),
+        "generated_at": now_jst,
+        "axis_averages": axis_averages,
+        "diversity_scores": llm_result.get("diversity_scores", {}),
+        "pitch_rankings": llm_result.get("pitch_rankings", []),
+        "summary": llm_result.get("summary", ""),
+    }
+
+    # Pydanticバリデーション（警告のみ）
+    try:
+        OverviewEvaluation.model_validate(overview)
+        logger.debug("OverviewEvaluation バリデーション成功")
+    except ValidationError as ve:
+        logger.warning(f"OverviewEvaluation バリデーション警告: {ve}")
+
+    logger.info("✓ 俯瞰評価の結果を取得しました")
+    return overview

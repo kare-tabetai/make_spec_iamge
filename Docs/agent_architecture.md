@@ -7,11 +7,11 @@
 | 項目 | 内容 |
 |------|------|
 | フレームワーク | Google ADK（Agent Development Kit） |
-| エージェント構成 | メインパイプライン（SequentialAgent、11ステップ）+ CritiqueAgent（リファインループ）+ ImagePromptAgent（個別実行）+ PitchEvaluatorAgent（事後評価、オプション）。計14ステップ |
+| エージェント構成 | メインパイプライン（SequentialAgent、11ステップ）+ CritiqueAgent（リファインループ）+ ImagePromptAgent（個別実行）+ PitchEvaluatorAgent（事後評価）+ OverviewEvaluatorAgent（俯瞰評価）。計15ステップ |
 | 状態管理 | `InMemorySessionService`（Session State） |
 | 実行方式 | `Runner.run_async()` による非同期実行 |
 | 入力 | トピック文字列（例: "忍者 × タイムトラベル"） |
-| 出力 | 企画書JSON・Markdown・PNG画像（企画書数ぶん）・stats.json・evaluation.json（オプション） |
+| 出力 | 企画書JSON・Markdown・PNG画像（企画書数ぶん）・stats.json・evaluation.json・overview_evaluation.json |
 
 ---
 
@@ -100,6 +100,19 @@
 │  M: EvalMergeAgent         → pitch_evaluation_output  │
 │                                                       │
 │  → pitch_N/evaluation.json として保存                  │
+└───────────────────────────────────────────────────────┘
+        │
+        ▼ (2件以上のpitch時 / --no-overview でスキップ)
+┌───────────────────────────────────────────────────────┐
+│  ⑮OverviewEvaluatorAgent (LlmAgent)                  │
+│  (全pitchを俯瞰して比較評価)                           │
+│                                                       │
+│  Python側: axis_averages（16軸平均値を算出）            │
+│  LLM側:   diversity_scores（7カテゴリの多様性）         │
+│           pitch_rankings（推薦順位）                    │
+│           summary（俯瞰コメント）                       │
+│                                                       │
+│  → overview_evaluation.json として保存                 │
 └───────────────────────────────────────────────────────┘
 ```
 
@@ -581,6 +594,57 @@ PitchEvaluatorOnlyPipeline (SequentialAgent) ← pipeline.py が生成
 
 ---
 
+### Agent ⑮ OverviewEvaluatorAgent（俯瞰比較評価）
+
+| 項目 | 内容 |
+|------|------|
+| ファイルパス | `src/game_pitch_agent/agents/overview_evaluator.py` |
+| クラス | `LlmAgent` |
+| 役割 | 全pitchを俯瞰して多様性・ランキング・総合コメントを生成する |
+| 使用ツール | なし |
+| 入力 | ユーザーメッセージに全pitchのマークダウン + evaluation.json を埋め込み |
+| 出力キー | `overview_evaluation_output` |
+| 実行条件 | 評価済みpitchが2件以上の場合に自動実行。`--no-overview` でスキップ |
+
+**処理の分担:**
+- **Python側（pipeline.py）**: `axis_averages`（16軸の全pitch平均値）を算出
+- **LLM側**: `diversity_scores`（7カテゴリ）、`pitch_rankings`、`summary` を生成
+
+**出力スキーマ（OverviewEvaluation）:**
+```json
+{
+  "topic": "お題名",
+  "pitch_count": 3,
+  "generated_at": "2026-03-08T12:00:00+09:00",
+  "axis_averages": {
+    "concept_novelty": 5.5,
+    "...": "（16軸すべての全pitch平均値）"
+  },
+  "diversity_scores": {
+    "concept_diversity": 7.0,
+    "mechanic_diversity": 6.5,
+    "genre_diversity": 8.0,
+    "art_style_diversity": 5.0,
+    "world_setting_diversity": 7.5,
+    "target_player_diversity": 6.0,
+    "overall_diversity": 6.5
+  },
+  "pitch_rankings": [
+    {
+      "rank": 1,
+      "idea_id": "...",
+      "title": "...",
+      "avg_score": 6.2,
+      "overall_fun": 7.0,
+      "strengths": "この企画の強み（50文字程度）"
+    }
+  ],
+  "summary": "全体を俯瞰した総合コメント（200-300文字）"
+}
+```
+
+---
+
 ## 4. ツール詳細
 
 ### ツール① google_search（ADK組み込み）
@@ -817,6 +881,24 @@ ImagePrompt: `idea_id`, `title`, `prompt`, `layout_description`, `art_style_note
 
 ---
 
+### OverviewEvaluation（俯瞰比較評価）
+
+| フィールド | 型 | 説明 |
+|-----------|-----|------|
+| `topic` | `str` | お題名 |
+| `pitch_count` | `int` | 評価対象のpitch数 |
+| `generated_at` | `str` | 生成日時（ISO 8601） |
+| `axis_averages` | `dict[str, float]` | 16軸の全pitch平均値 |
+| `diversity_scores` | `DiversityScores` | 多様性スコア（7カテゴリ） |
+| `pitch_rankings` | `list[PitchRanking]` | 推薦順位 |
+| `summary` | `str` | 俯瞰コメント |
+
+DiversityScores: `concept_diversity`, `mechanic_diversity`, `genre_diversity`, `art_style_diversity`, `world_setting_diversity`, `target_player_diversity`, `overall_diversity`
+
+PitchRanking: `rank`, `idea_id`, `title`, `avg_score`, `overall_fun`, `strengths`
+
+---
+
 ### PitchDocument（最終出力集約）
 
 | フィールド | 型 | 説明 |
@@ -1026,11 +1108,12 @@ output/
     │   ├── pitch.md
     │   ├── pitch_image.png
     │   └── pitch.pptx
-    └── pitch_N/
-        ├── pitch.json
-        ├── pitch.md
-        ├── pitch_image.png
-        └── pitch.pptx
+    ├── pitch_N/
+    │   ├── pitch.json
+    │   ├── pitch.md
+    │   ├── pitch_image.png
+    │   └── pitch.pptx
+    └── overview_evaluation.json       # 俯瞰比較評価（pitch 2件以上時）
 ```
 
 ログファイルの構造（各エージェントのログ）:
@@ -1095,12 +1178,13 @@ GamePitchPipeline (SequentialAgent) ← ステップ1〜11
 
 CritiqueAgent (LlmAgent) ← 個別実行、リファインループ
 ImagePromptAgent (LlmAgent) ← 個別実行
-PitchEvaluatorPipeline (SequentialAgent) ← 個別実行、オプション
+PitchEvaluatorPipeline (SequentialAgent) ← 個別実行
   ├── InnovationEvalAgent (LlmAgent)
   ├── CoherenceEvalAgent (LlmAgent)
   ├── PlayabilityEvalAgent (LlmAgent)
   ├── PresentationEvalAgent (LlmAgent)
   └── EvalMergeAgent (LlmAgent)
+OverviewEvaluatorAgent (LlmAgent) ← 個別実行、pitch 2件以上時
 ```
 
 各サブエージェントが独立した発散手法を担当し、最後にMergeAgentが統合する。
