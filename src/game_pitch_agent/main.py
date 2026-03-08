@@ -478,6 +478,13 @@ async def async_generate(args: argparse.Namespace) -> int:
     logger.info(f"出力ディレクトリ: {output_dir}")
     logger.info(f"画像生成するには: game-pitch render --dir {output_dir}")
 
+    # デフォルトで評価を実行（--no-evaluate で無効化）
+    if not getattr(args, "no_evaluate", False):
+        logger.info("\n企画書評価を実行中...")
+        eval_result = await _run_evaluate_on_dir(output_dir, topic, config)
+        if eval_result != 0:
+            logger.warning("企画書評価でエラーが発生しました")
+
     return 0
 
 
@@ -697,8 +704,8 @@ async def async_full(args: argparse.Namespace) -> int:
     _log_summary(saved_files, output_dir, skip_image=skip_image, render_format=render_format)
     _save_and_log_stats(results.get("stats", {}), output_dir)
 
-    # --evaluate 指定時は評価を実行
-    if getattr(args, "evaluate", False):
+    # デフォルトで評価を実行（--no-evaluate で無効化）
+    if not getattr(args, "no_evaluate", False):
         logger.info("\n企画書評価を実行中...")
         eval_result = await _run_evaluate_on_dir(output_dir, topic, config)
         if eval_result != 0:
@@ -874,6 +881,12 @@ def main() -> None:
   # フルパイプライン（画像スキップ）
   uv run game-pitch full --topic "お題:「不自由」" --no-image
 
+  # フルパイプライン（評価スキップ）
+  uv run game-pitch full --topic "お題:「不自由」" --no-evaluate
+
+  # テキスト生成のみ（評価スキップ）
+  uv run game-pitch generate --topic "お題:「不自由」" --no-evaluate
+
   # 既存の出力を評価
   uv run game-pitch evaluate --dir output/20260301_120000_xxx
         """,
@@ -891,6 +904,7 @@ def main() -> None:
     gen_parser.add_argument("--num-pitches", type=int, default=None, help="生成する企画書の枚数")
     gen_parser.add_argument("--config", default=None, help="設定ファイルのパス")
     gen_parser.add_argument("--search-engine", choices=["ddg", "google"], default="ddg", help="検索エンジン (default: ddg)")
+    gen_parser.add_argument("--no-evaluate", action="store_true", help="16軸評価をスキップ")
 
     # --- render サブコマンド ---
     render_parser = subparsers.add_parser(
@@ -919,7 +933,7 @@ def main() -> None:
     full_parser.add_argument("--no-image", action="store_true", help="画像生成をスキップ")
     full_parser.add_argument("--config", default=None, help="設定ファイルのパス")
     full_parser.add_argument("--search-engine", choices=["ddg", "google"], default="ddg", help="検索エンジン (default: ddg)")
-    full_parser.add_argument("--evaluate", action="store_true", help="生成後に企画書を自動評価")
+    full_parser.add_argument("--no-evaluate", action="store_true", help="16軸評価をスキップ")
 
     # --- evaluate サブコマンド ---
     eval_parser = subparsers.add_parser(

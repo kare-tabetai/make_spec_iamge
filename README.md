@@ -42,7 +42,7 @@
     ▼
 出力: Markdown / JSON / PNG画像 / stats.json
     │
-    ▼ (オプション: evaluate コマンド or full --evaluate)
+    ▼ (デフォルト実行 / --no-evaluate でスキップ)
 [14] PitchEvaluatorPipeline ← 16軸事後評価（4専門グループ + マージ）→ evaluation.json
     ├── InnovationEvalAgent    ← 革新性3軸（イノベーション・スカウト）
     ├── CoherenceEvalAgent     ← 設計整合性6軸（デザインアーキテクト）
@@ -163,8 +163,8 @@ uv run game-pitch full --topic "お題:「不自由」" --mode prod --language e
 # 画像生成をスキップ（generateと同等の結果）
 uv run game-pitch full --topic "お題:「不自由」" --no-image
 
-# フルパイプライン実行後に自動評価
-uv run game-pitch full --topic "お題:「不自由」" --no-image --evaluate
+# 評価をスキップ
+uv run game-pitch full --topic "お題:「不自由」" --no-evaluate
 ```
 
 ### `evaluate` — 既存の企画書を16軸で評価
@@ -196,6 +196,7 @@ uv run game-pitch evaluate --dir output/20260306_224547_xxx --force
 | `--num-pitches` | 生成する企画書の枚数 | test: 2 / prod: 3（`config.yaml`） |
 | `--config` | 設定ファイルのパス | プロジェクトルートの `config.yaml` |
 | `--search-engine` | 検索エンジン `ddg` / `google` | `ddg` |
+| `--no-evaluate` | 16軸評価をスキップ | `false` |
 
 #### `render` オプション
 
@@ -220,7 +221,7 @@ uv run game-pitch evaluate --dir output/20260306_224547_xxx --force
 | `--no-image` | 画像生成をスキップ | `false` |
 | `--config` | 設定ファイルのパス | プロジェクトルートの `config.yaml` |
 | `--search-engine` | 検索エンジン `ddg` / `google` | `ddg` |
-| `--evaluate` | 生成後に企画書を自動評価 | `false` |
+| `--no-evaluate` | 16軸評価をスキップ | `false` |
 
 #### `evaluate` オプション
 
@@ -310,6 +311,7 @@ game-pitch-agent/
 
 | バージョン | 日付 | 内容 |
 |-----------|------|------|
+| 0.11.0 | 2026-03-08 | デフォルト評価実行: generate/fullコマンドで16軸評価をデフォルト実行するよう変更。`--evaluate`フラグを`--no-evaluate`に反転（評価スキップ用） ([Steering](Docs/Steering/202603080200_default-evaluate.md)) |
 | 0.10.0 | 2026-03-08 | 評価マルチエージェント化: 単一エージェント一括採点を4専門グループ（Innovation/Coherence/Playability/Presentation）＋マージの SequentialAgent に分割。各グループに専門ペルソナを付与して評価の質を向上 ([Steering](Docs/Steering/202603081218_multi-agent-evaluator.md)) |
 | 0.9.4 | 2026-03-08 | 評価16軸リファレンスドキュメント作成: 16評価軸の採点基準・詳細をドキュメント化、CLAUDE_PJ.mdに評価軸変更時の同期ルールを追記 ([Steering](Docs/Steering/202603080310_evaluation-axes-documentation.md)) |
 | 0.9.3 | 2026-03-08 | トピック不一致問題修正: パイプライン全体でトピックが失われていた問題を解消。ExpansionAgent/MergeAgent/CritiqueAgent/EvaluationAgent/CoreIdeaAgentにトピック意識を追加、CritiqueとEvaluationに`topic_relevance`評価軸を新設、`_run_single_agent`のユーザーメッセージにtopicを含めるよう修正。theme_concept_relevanceが1.0→3.0〜9.0に大幅改善 ([Steering](Docs/Steering/202603080240_fix-topic-relevance-pipeline.md)) |
