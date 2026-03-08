@@ -18,24 +18,34 @@
 
 ## 16軸一覧
 
-| # | 軸名 | 日本語名 | 観点 |
-|---|------|---------|------|
-| 1 | `concept_novelty` | コンセプトの斬新さ | 既存ゲームにない新しい体験を提案しているか |
-| 2 | `core_mechanic_novelty` | コアメカニクスの斬新さ | 前例のないメカニクスか、新ジャンルを生み出す可能性があるか |
-| 3 | `mechanic_intuitiveness` | メカニクスが直感的か | 説明不要で遊び方がわかるか |
-| 4 | `feasibility` | 実現可能性 | 現実的なチーム規模・期間で開発可能か |
-| 5 | `theme_concept_relevance` | テーマ×コンセプト関連度 | テーマがコンセプトに不可欠な存在か |
-| 6 | `theme_art_style_relevance` | テーマ×アートスタイル関連度 | アートスタイルがテーマを体現しているか |
-| 7 | `design_coherence` | 設計の一貫性 | テーマ・コンセプト・メカニクスが三位一体か |
-| 8 | `art_style_concept_coherence` | アートスタイル×コンセプト整合性 | アートスタイルがコンセプトの感情体験を増幅しているか |
-| 9 | `mechanic_art_style_coherence` | メカニクス×アートスタイル整合性 | メカニクスの動きをアートスタイルが表現できているか |
-| 10 | `first_impression_hook` | 第一印象のインパクト | タイトル・キャッチコピーで「遊びたい！」と思わせるか |
-| 11 | `elevator_pitch_clarity` | 一言で伝わる力 | キャッチコピーと概要でゲームの全体像が瞬時に伝わるか |
-| 12 | `game_cycle_quality` | ゲームサイクルの質 | サイクル5要素が有機的に連鎖し繰り返すほど深まるか |
-| 13 | `thematic_mechanic_unity` | テーマとメカニクスの一体感 | プレイ行為そのものがテーマを体現しているか |
-| 14 | `game_feel` | 手触り・ジュース感 | 入力に対するフィードバックが明確に想像できるか |
-| 15 | `risk_reward_depth` | リスクとリターン・駆け引きの深み | 常に判断を迫られる緊張感があるか |
-| 16 | `overall_fun` | 全体の面白さ | 万人に勧められるか、ゲーム史に残る可能性があるか |
+| # | 軸名 | 日本語名 | グループ | 観点 |
+|---|------|---------|---------|------|
+| 1 | `concept_novelty` | コンセプトの斬新さ | A: Innovation | 既存ゲームにない新しい体験を提案しているか |
+| 2 | `core_mechanic_novelty` | コアメカニクスの斬新さ | A: Innovation | 前例のないメカニクスか、新ジャンルを生み出す可能性があるか |
+| 3 | `feasibility` | 実現可能性 | A: Innovation | 現実的なチーム規模・期間で開発可能か |
+| 4 | `theme_concept_relevance` | テーマ×コンセプト関連度 | B: Coherence | テーマがコンセプトに不可欠な存在か |
+| 5 | `theme_art_style_relevance` | テーマ×アートスタイル関連度 | B: Coherence | アートスタイルがテーマを体現しているか |
+| 6 | `design_coherence` | 設計の一貫性 | B: Coherence | テーマ・コンセプト・メカニクスが三位一体か |
+| 7 | `art_style_concept_coherence` | アートスタイル×コンセプト整合性 | B: Coherence | アートスタイルがコンセプトの感情体験を増幅しているか |
+| 8 | `mechanic_art_style_coherence` | メカニクス×アートスタイル整合性 | B: Coherence | メカニクスの動きをアートスタイルが表現できているか |
+| 9 | `thematic_mechanic_unity` | テーマとメカニクスの一体感 | B: Coherence | プレイ行為そのものがテーマを体現しているか |
+| 10 | `mechanic_intuitiveness` | メカニクスが直感的か | C: Playability | 説明不要で遊び方がわかるか |
+| 11 | `game_cycle_quality` | ゲームサイクルの質 | C: Playability | サイクル5要素が有機的に連鎖し繰り返すほど深まるか |
+| 12 | `game_feel` | 手触り・ジュース感 | C: Playability | 入力に対するフィードバックが明確に想像できるか |
+| 13 | `risk_reward_depth` | リスクとリターン・駆け引きの深み | C: Playability | 常に判断を迫られる緊張感があるか |
+| 14 | `first_impression_hook` | 第一印象のインパクト | D: Presentation | タイトル・キャッチコピーで「遊びたい！」と思わせるか |
+| 15 | `elevator_pitch_clarity` | 一言で伝わる力 | D: Presentation | キャッチコピーと概要でゲームの全体像が瞬時に伝わるか |
+| 16 | `overall_fun` | 全体の面白さ | Merge | 万人に勧められるか、ゲーム史に残る可能性があるか |
+
+## 評価グループとペルソナ
+
+| グループ | 名称 | ペルソナ | 担当軸数 | エージェント名 |
+|---------|------|---------|---------|-------------|
+| A | Innovation（革新性） | イノベーション・スカウト — 新規性と実現可能性を天秤にかけるベンチャーキャピタリスト的視点 | 3 | InnovationEvalAgent |
+| B | Coherence（設計整合性） | デザインアーキテクト — テーマ・コンセプト・メカニクス・アートの四要素の構造美を審査する設計審査官 | 6 | CoherenceEvalAgent |
+| C | Playability（プレイアビリティ） | プレイテスター — コントローラーを握った体験を想像して「触って楽しいか」を基準にするベテランQAリード | 4 | PlayabilityEvalAgent |
+| D | Presentation（プレゼンテーション） | マーケティングディレクター — ゲームショウのブースを3秒で通過する来場者の目を引けるかを判断 | 2 | PresentationEvalAgent |
+| Merge | 統合 | ベテランゲーム批評家 — 4グループの採点結果を統合し overall_fun + summary を独自評価 | 1 | EvalMergeAgent |
 
 ## 各軸の詳細基準
 
@@ -196,5 +206,10 @@
 
 ## ソースコード
 
-- 評価軸定義・採点基準: `src/game_pitch_agent/agents/pitch_evaluator.py` (`PITCH_EVALUATION_INSTRUCTION`)
+- 評価軸定義・採点基準: `src/game_pitch_agent/agents/pitch_evaluator.py`
+  - Group A: `INNOVATION_EVAL_INSTRUCTION`
+  - Group B: `COHERENCE_EVAL_INSTRUCTION`
+  - Group C: `PLAYABILITY_EVAL_INSTRUCTION`
+  - Group D: `PRESENTATION_EVAL_INSTRUCTION`
+  - Merge: `EVAL_MERGE_INSTRUCTION`
 - データモデル: `src/game_pitch_agent/schemas/models.py` (`PitchEvaluation` クラス)

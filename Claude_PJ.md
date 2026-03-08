@@ -26,3 +26,16 @@
 - 温度設定やモデル設定の変更
 
 更新時は、変更箇所だけでなく関連するセクション（データフロー図、Session State一覧、スキーマ一覧など）も整合性を確認して更新してください。
+
+## 評価軸ドキュメントの同期ルール
+
+`src/game_pitch_agent/agents/pitch_evaluator.py` の各評価インストラクション（`INNOVATION_EVAL_INSTRUCTION`, `COHERENCE_EVAL_INSTRUCTION`, `PLAYABILITY_EVAL_INSTRUCTION`, `PRESENTATION_EVAL_INSTRUCTION`, `EVAL_MERGE_INSTRUCTION`）内の評価軸を変更した場合は、必ず `Docs/evaluation-axes.md` も同時に更新してください。
+以下のいずれかに該当する変更を行った場合が対象です:
+
+- 評価軸の追加・削除・名称変更
+- 採点基準（10点・5点・1点）の変更
+- 採点ルール（刻み、平均目標など）の変更
+- 出力フォーマットの変更
+- `schemas/models.py` の `PitchEvaluation` クラスのフィールド変更
+
+更新時は、一覧表・詳細基準・出力フォーマット例のすべてを整合性を確認して更新してください。

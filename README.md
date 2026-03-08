@@ -43,7 +43,12 @@
 出力: Markdown / JSON / PNG画像 / stats.json
     │
     ▼ (オプション: evaluate コマンド or full --evaluate)
-[14] PitchEvaluatorAgent    ← 16軸事後評価 → evaluation.json
+[14] PitchEvaluatorPipeline ← 16軸事後評価（4専門グループ + マージ）→ evaluation.json
+    ├── InnovationEvalAgent    ← 革新性3軸（イノベーション・スカウト）
+    ├── CoherenceEvalAgent     ← 設計整合性6軸（デザインアーキテクト）
+    ├── PlayabilityEvalAgent   ← プレイアビリティ4軸（プレイテスター）
+    ├── PresentationEvalAgent  ← プレゼンテーション2軸（マーケティングディレクター）
+    └── EvalMergeAgent         ← overall_fun + summary 統合
 ```
 
 ## 出力サンプル
@@ -305,6 +310,7 @@ game-pitch-agent/
 
 | バージョン | 日付 | 内容 |
 |-----------|------|------|
+| 0.10.0 | 2026-03-08 | 評価マルチエージェント化: 単一エージェント一括採点を4専門グループ（Innovation/Coherence/Playability/Presentation）＋マージの SequentialAgent に分割。各グループに専門ペルソナを付与して評価の質を向上 ([Steering](Docs/Steering/202603081218_multi-agent-evaluator.md)) |
 | 0.9.4 | 2026-03-08 | 評価16軸リファレンスドキュメント作成: 16評価軸の採点基準・詳細をドキュメント化、CLAUDE_PJ.mdに評価軸変更時の同期ルールを追記 ([Steering](Docs/Steering/202603080310_evaluation-axes-documentation.md)) |
 | 0.9.3 | 2026-03-08 | トピック不一致問題修正: パイプライン全体でトピックが失われていた問題を解消。ExpansionAgent/MergeAgent/CritiqueAgent/EvaluationAgent/CoreIdeaAgentにトピック意識を追加、CritiqueとEvaluationに`topic_relevance`評価軸を新設、`_run_single_agent`のユーザーメッセージにtopicを含めるよう修正。theme_concept_relevanceが1.0→3.0〜9.0に大幅改善 ([Steering](Docs/Steering/202603080240_fix-topic-relevance-pipeline.md)) |
 | 0.9.2 | 2026-03-07 | PitchEvaluatorAgentデータフロー修正: ユーザーメッセージにpitchデータを直接埋め込み、evaluation.jsonのタイトル・IDがpitch.jsonと不一致になるハルシネーション問題を解消 ([Steering](Docs/Steering/202603070645_fix-evaluator-dataflow.md)) |

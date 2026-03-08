@@ -615,8 +615,9 @@ async def run_pitch_evaluation(pitch_data: dict, topic: str, config: AppConfig) 
         session_id=session.id,
         new_message=message,
     ):
+        # SequentialAgent のサブエージェントすべてが完了するまでイベントを消費する
         if event.is_final_response():
-            break
+            logger.info("PitchEvaluatorPipeline 完了")
 
     final_session = await session_service.get_session(
         app_name="game_pitch_agent",
@@ -634,8 +635,8 @@ async def run_pitch_evaluation(pitch_data: dict, topic: str, config: AppConfig) 
                 logger.debug("PitchEvaluation バリデーション成功")
             except ValidationError as ve:
                 logger.warning(f"PitchEvaluation バリデーション警告: {ve}")
-        logger.info("✓ PitchEvaluatorAgent の結果を取得しました")
+        logger.info("✓ PitchEvaluatorPipeline の結果を取得しました")
     else:
-        logger.warning("✗ PitchEvaluatorAgent の結果が取得できませんでした")
+        logger.warning("✗ PitchEvaluatorPipeline の結果が取得できませんでした")
 
     return result

@@ -86,8 +86,19 @@
         │
         ▼ (オプション: evaluate コマンド or --evaluate フラグ)
 ┌───────────────────────────────────────────────────────┐
-│  ⑭PitchEvaluatorAgent     →  pitch_evaluation_output │
+│  ⑭PitchEvaluatorPipeline (SequentialAgent)            │
 │  (各 pitch.json に対して個別実行)                      │
+│                                                       │
+│  A: InnovationEvalAgent    → eval_innovation_output   │
+│         ↓                                             │
+│  B: CoherenceEvalAgent     → eval_coherence_output    │
+│         ↓                                             │
+│  C: PlayabilityEvalAgent   → eval_playability_output  │
+│         ↓                                             │
+│  D: PresentationEvalAgent  → eval_presentation_output │
+│         ↓                                             │
+│  M: EvalMergeAgent         → pitch_evaluation_output  │
+│                                                       │
 │  → pitch_N/evaluation.json として保存                  │
 └───────────────────────────────────────────────────────┘
 ```
@@ -512,28 +523,50 @@ CritiqueFeedback: `idea_id`, `concept_mechanic_alignment`, `game_cycle_concreten
 
 ---
 
-### Agent ⑭ PitchEvaluatorAgent（オプション・事後評価）
+### Agent ⑭ PitchEvaluatorPipeline（オプション・事後評価・マルチエージェント）
 
 | 項目 | 内容 |
 |------|------|
 | ファイルパス | `src/game_pitch_agent/agents/pitch_evaluator.py` |
-| クラス | `LlmAgent` |
-| 役割 | 生成済みの企画書を16軸（各0〜10点）で事後評価する |
+| クラス | `SequentialAgent`（5つの LlmAgent サブエージェントを包含） |
+| 役割 | 生成済みの企画書を4専門グループで16軸（各0〜10点）事後評価する |
 | 使用ツール | なし |
 | 入力キー | `pitch_data`（pitch.json全体）、`evaluation_topic`（トピック） |
-| 出力キー | `pitch_evaluation_output` |
+| 出力キー | `pitch_evaluation_output`（最終出力、EvalMergeAgent が書き込み） |
 | 実行位置 | `evaluate` サブコマンドまたは `full --evaluate` フラグで個別実行 |
 
-**プロンプトの核心部分:**
-- ベテランゲーム批評家の人格設定（30年以上の業界経験）
-- 16軸それぞれに10点/5点/1点の具体的採点基準を明示
-- 0.5点刻みの厳格な採点を要求
-- 企画書に記載のない要素は低評価するルール
+#### サブエージェント構成
 
-**評価16軸:**
-concept_novelty, core_mechanic_novelty, mechanic_intuitiveness, feasibility, theme_concept_relevance, theme_art_style_relevance, design_coherence, art_style_concept_coherence, mechanic_art_style_coherence, first_impression_hook, elevator_pitch_clarity, game_cycle_quality, thematic_mechanic_unity, game_feel, risk_reward_depth, overall_fun
+| # | エージェント名 | グループ | ペルソナ | 担当軸数 | 出力キー |
+|---|---------------|---------|---------|---------|---------|
+| A | InnovationEvalAgent | Innovation（革新性） | イノベーション・スカウト | 3 | `eval_innovation_output` |
+| B | CoherenceEvalAgent | Coherence（設計整合性） | デザインアーキテクト | 6 | `eval_coherence_output` |
+| C | PlayabilityEvalAgent | Playability（プレイアビリティ） | プレイテスター | 4 | `eval_playability_output` |
+| D | PresentationEvalAgent | Presentation（プレゼンテーション） | マーケティングディレクター | 2 | `eval_presentation_output` |
+| M | EvalMergeAgent | Merge（統合） | ベテランゲーム批評家 | 1 | `pitch_evaluation_output` |
 
-**出力スキーマ（PitchEvaluation）:**
+**アーキテクチャ:**
+```
+PitchEvaluatorOnlyPipeline (SequentialAgent) ← pipeline.py が生成
+  └── PitchEvaluatorPipeline (SequentialAgent) ← create_pitch_evaluator_agent() の返り値
+        ├── InnovationEvalAgent      → eval_innovation_output
+        ├── CoherenceEvalAgent       → eval_coherence_output
+        ├── PlayabilityEvalAgent     → eval_playability_output
+        ├── PresentationEvalAgent    → eval_presentation_output
+        └── EvalMergeAgent           → pitch_evaluation_output（最終出力）
+```
+
+**各グループの評価軸:**
+
+| グループ | 軸 |
+|---------|-----|
+| A: Innovation | concept_novelty, core_mechanic_novelty, feasibility |
+| B: Coherence | theme_concept_relevance, theme_art_style_relevance, design_coherence, art_style_concept_coherence, mechanic_art_style_coherence, thematic_mechanic_unity |
+| C: Playability | mechanic_intuitiveness, game_cycle_quality, game_feel, risk_reward_depth |
+| D: Presentation | first_impression_hook, elevator_pitch_clarity |
+| Merge | overall_fun + summary |
+
+**出力スキーマ（PitchEvaluation — 変更なし）:**
 ```json
 {
   "idea_id": "string",
@@ -1062,6 +1095,12 @@ GamePitchPipeline (SequentialAgent) ← ステップ1〜11
 
 CritiqueAgent (LlmAgent) ← 個別実行、リファインループ
 ImagePromptAgent (LlmAgent) ← 個別実行
+PitchEvaluatorPipeline (SequentialAgent) ← 個別実行、オプション
+  ├── InnovationEvalAgent (LlmAgent)
+  ├── CoherenceEvalAgent (LlmAgent)
+  ├── PlayabilityEvalAgent (LlmAgent)
+  ├── PresentationEvalAgent (LlmAgent)
+  └── EvalMergeAgent (LlmAgent)
 ```
 
 各サブエージェントが独立した発散手法を担当し、最後にMergeAgentが統合する。
